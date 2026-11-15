@@ -75,10 +75,33 @@ struct LauncherConfig: Codable, Equatable {
         return ids.filter { seen.insert($0).inserted }
     }
 
+    private static let lock = NSLock()
+    private static var cachedDefaults: UserDefaults?
+    private static let savedKey = "resolvedGroup.v1"
+
+    /// 한 번 찾은 그룹은 프로세스 안에서 기억하고, 다음 실행에서도 바로 쓰도록 이름을 저장해 둔다.
+    /// (서명 권한 탐색과 컨테이너 확인은 비싸서 탭마다 반복하면 위젯 입력이 느려진다)
     static func sharedDefaults() -> UserDefaults? {
+        lock.lock(); defer { lock.unlock() }
+        if let d = cachedDefaults { return d }
+
+        func open(_ id: String) -> UserDefaults? {
+            guard FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id) != nil,
+                  let d = UserDefaults(suiteName: id) else { return nil }
+            return d
+        }
+        // 1) 지난번에 성공한 이름
+        if let saved = UserDefaults.standard.string(forKey: savedKey), let d = open(saved) {
+            cachedDefaults = d
+            return d
+        }
+        // 2) 후보 전체 탐색 (처음 한 번만)
         for id in candidateGroups() {
-            if FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id) != nil,
-               let d = UserDefaults(suiteName: id) { return d }
+            if let d = open(id) {
+                cachedDefaults = d
+                UserDefaults.standard.set(id, forKey: savedKey)
+                return d
+            }
         }
         return nil
     }
