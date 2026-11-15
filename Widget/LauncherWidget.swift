@@ -109,7 +109,7 @@ struct GridView: View {
             .contentShape(Rectangle())
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         let r = ComboLogic.resolve(seq: entry.seq, tap: number, combos: entry.config.combos)
-        if let url = r.url, entry.config.openDirect || entry.direct {
+        if let url = r.url, entry.config.openDirect, !entry.direct {
             // (실험) 인텐트로 바로 열기
             Button(intent: OpenLinkIntent(url: url)) { area }.buttonStyle(.plain)
         } else if let url = r.url, let relay = Self.relayURL(url) {

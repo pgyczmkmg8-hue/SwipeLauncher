@@ -149,6 +149,7 @@ struct TapState: Codable {
     var seq: [Int] = []
     var at: Date = .distantPast
     var lastCell: Int? = nil      // 마지막으로 누른 칸(누름 표시용)
+    var count: Int = 0            // 인텐트가 실행된 총 횟수(진단용)
 
     private static let key = "tapstate.v1"
 

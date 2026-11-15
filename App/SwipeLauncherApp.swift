@@ -159,6 +159,20 @@ struct ContentView: View {
                 }
 
                 Section {
+                    let st = TapState.load()
+                    LabeledContent("App Group 연결", value: sharing ? "연결됨" : "안 됨")
+                    LabeledContent("위젯 입력 횟수", value: sharing ? "\(st.count)회" : "확인 불가")
+                    if sharing, let c = st.lastCell {
+                        LabeledContent("마지막 입력", value: "\(ComboLogic.symbol(c))번 칸, \(Int(Date().timeIntervalSince(st.at)))초 전")
+                    }
+                    Button("새로고침") { sharing = LauncherConfig.isSharingAvailable; config = LauncherConfig.load() }
+                } header: {
+                    Text("진단")
+                } footer: {
+                    Text("위젯 칸을 누른 뒤 '새로고침'을 누르세요. 입력 횟수가 늘면 위젯의 칸 입력은 정상입니다. 늘지 않으면 칸 입력이 위젯에서 실행되지 않는 것입니다.")
+                }
+
+                Section {
                     LabeledContent("현재 버전", value: UpdateChecker.currentVersion)
                     Button(checking ? "확인 중…" : "업데이트 확인") { Task { await check() } }
                         .disabled(checking)
