@@ -44,10 +44,14 @@ struct TapIntent: AppIntent {
             cfg.combos = LauncherConfig.parseCombos(combosText)
             cfg.timeout = Double(min(max(timeout, 1), 15))
         }
-        let state = TapState.current(timeout: cfg.timeout)
-        let r = ComboLogic.resolve(seq: state.seq, tap: cell, combos: cfg.combos)
-        let prev = TapState.load()
-        TapState(seq: r.new, at: .now, lastCell: cell, count: prev.count + 1, readyURL: r.url).save()
+        // 읽기 → 판정 → 저장을 한 덩어리로 묶어, 겹쳐 들어온 입력도 순서대로 처리한다.
+        let tapped = cell
+        TapState.exclusive {
+            let state = TapState.current(timeout: cfg.timeout)
+            let r = ComboLogic.resolve(seq: state.seq, tap: tapped, combos: cfg.combos)
+            let prev = TapState.load()
+            TapState(seq: r.new, at: .now, lastCell: tapped, count: prev.count + 1, readyURL: r.url).save()
+        }
         return .result()
     }
 }

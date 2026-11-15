@@ -15,14 +15,16 @@ struct Entry: TimelineEntry {
 
 struct Provider: TimelineProvider {
     /// 누른 칸이 불투명하게 보이는 시간(초)
-    static let flashDuration: TimeInterval = 0.7
+    static let flashDuration: TimeInterval = 0.1
+    /// 마지막 입력이 이 시간 안이면 표시 대상으로 본다. (폰에서는 입력 처리 뒤 화면이 늦게 그려질 수 있다)
+    static let flashWindow: TimeInterval = 3.0
 
     private func make(at now: Date = .now) -> (Entry, LauncherConfig) {
         let cfg = LauncherConfig.load()
         let st = TapState.current(timeout: cfg.timeout)
-        let flashing = now.timeIntervalSince(st.at) < Self.flashDuration
+        let fresh = now.timeIntervalSince(st.at) < Self.flashWindow
         return (Entry(date: now, config: cfg, seq: st.seq, readyURL: st.readyURL, readyCell: st.lastCell,
-                      flash: flashing ? st.lastCell : nil), cfg)
+                      flash: fresh ? st.lastCell : nil), cfg)
     }
 
     func placeholder(in context: Context) -> Entry { make().0 }
@@ -32,12 +34,13 @@ struct Provider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        let (e, cfg) = make()
+        let now = Date()
+        let (e, cfg) = make(at: now)
         let st = TapState.current(timeout: cfg.timeout)
         var entries = [e]
-        // 누름 표시를 거둔 화면
+        // 표시는 이 화면이 그려진 시점부터 잠깐만 보여 주고 거둔다.
         if e.flash != nil {
-            entries.append(Entry(date: st.at.addingTimeInterval(Self.flashDuration + 0.05), config: cfg, seq: st.seq,
+            entries.append(Entry(date: now.addingTimeInterval(Self.flashDuration), config: cfg, seq: st.seq,
                                  readyURL: st.readyURL, readyCell: st.lastCell, flash: nil))
         }
         // 제한시간이 지나면 입력 상태를 비운 화면으로 바꾼다.

@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 import WidgetKit
 
@@ -77,6 +78,14 @@ struct LauncherConfig: Codable, Equatable {
 
     private static let lock = NSLock()
     private static var cachedDefaults: UserDefaults?
+    private static var cachedContainer: URL?
+
+    /// 앱 그룹 공유 폴더. 입력 상태처럼 즉시 서로 보여야 하는 값은 설정(UserDefaults)이 아니라 이 폴더의 파일에 둔다.
+    static func sharedContainerURL() -> URL? {
+        _ = sharedDefaults()   // 그룹 이름을 먼저 확정한다
+        lock.lock(); defer { lock.unlock() }
+        return cachedContainer
+    }
     private static let savedKey = "resolvedGroup.v1"
 
     /// 한 번 찾은 그룹은 프로세스 안에서 기억하고, 다음 실행에서도 바로 쓰도록 이름을 저장해 둔다.
@@ -86,8 +95,9 @@ struct LauncherConfig: Codable, Equatable {
         if let d = cachedDefaults { return d }
 
         func open(_ id: String) -> UserDefaults? {
-            guard FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id) != nil,
+            guard let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id),
                   let d = UserDefaults(suiteName: id) else { return nil }
+            cachedContainer = url
             return d
         }
         // 1) 지난번에 성공한 이름
@@ -168,6 +178,8 @@ struct LauncherConfig: Codable, Equatable {
 }
 
 /// 지금까지 누른 칸 번호(1부터)와 마지막으로 누른 시각.
+/// 앱 그룹 공유 폴더의 파일에 저장해서, 입력 처리와 위젯 다시 그리기가 서로 즉시 보이게 한다.
+/// (UserDefaults 는 다른 프로세스에 전달되기까지 지연될 수 있어 한 박자 늦은 화면이 생긴다)
 struct TapState: Codable {
     var seq: [Int] = []
     var at: Date = .distantPast
@@ -175,11 +187,31 @@ struct TapState: Codable {
     var count: Int = 0            // 인텐트가 실행된 총 횟수(진단용)
     var readyURL: String? = nil   // 화면이 늦어 놓친 마지막 입력으로 이미 완성된 조합의 주소 (그 칸을 한 번 더 누르면 연다)
 
-    private static let key = "tapstate.v1"
+    private static let fileName = "tapstate.json"
+    private static let fallbackKey = "tapstate.v1"
+
+    private static func fileURL() -> URL? {
+        LauncherConfig.sharedContainerURL()?.appendingPathComponent(fileName)
+    }
+
+    /// 입력 처리를 한 번에 하나씩만 하도록 파일 잠금을 건다.
+    /// 빠르게 연속으로 누르면 입력 처리가 겹쳐서, 서로의 결과를 못 보고 덮어쓰기 때문이다.
+    static func exclusive<T>(_ body: () -> T) -> T {
+        guard let dir = LauncherConfig.sharedContainerURL() else { return body() }
+        let fd = open(dir.appendingPathComponent("tapstate.lock").path, O_CREAT | O_RDWR, 0o644)
+        guard fd >= 0 else { return body() }
+        flock(fd, LOCK_EX)
+        defer { flock(fd, LOCK_UN); close(fd) }
+        return body()
+    }
 
     static func load() -> TapState {
-        let d = LauncherConfig.sharedDefaults() ?? UserDefaults.standard
-        guard let data = d.data(forKey: key),
+        if let url = fileURL() {
+            guard let data = try? Data(contentsOf: url),
+                  let s = try? JSONDecoder().decode(TapState.self, from: data) else { return TapState() }
+            return s
+        }
+        guard let data = UserDefaults.standard.data(forKey: fallbackKey),
               let s = try? JSONDecoder().decode(TapState.self, from: data) else { return TapState() }
         return s
     }
@@ -191,8 +223,11 @@ struct TapState: Codable {
     }
 
     func save() {
-        let d = LauncherConfig.sharedDefaults() ?? UserDefaults.standard
         guard let data = try? JSONEncoder().encode(self) else { return }
-        d.set(data, forKey: Self.key)
+        if let url = Self.fileURL() {
+            try? data.write(to: url, options: [.atomic])
+        } else {
+            UserDefaults.standard.set(data, forKey: Self.fallbackKey)
+        }
     }
 }
