@@ -10,6 +10,8 @@
 		366F3E4C79A2BCFD3B5BD578 /* LauncherWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0F6682C81D57A8B1AF2EE72 /* LauncherWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3BF715F5463D07D635F0EC79 /* SwipeLauncherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */; };
 		8F1F25C77B3DB5D43C32BFAC /* LauncherWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */; };
+		AB3EE8E1C86337D80DAB9E02 /* TransparentSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C85AA81E28B71ADA152B9F /* TransparentSetupView.swift */; };
+		C24A9E3F0A531E55F95A0958 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E997F6602BD4A973FF97627 /* Calibration.swift */; };
 		F32D76394DAB617C20F2931F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 172F17BEA3AE7E2A0B1A942E /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -40,9 +42,11 @@
 /* Begin PBXFileReference section */
 		0D458A28D50A57AEBC0D2884 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		172F17BEA3AE7E2A0B1A942E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3E997F6602BD4A973FF97627 /* Calibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
 		935671B16B720105F0217B38 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeLauncherApp.swift; sourceTree = "<group>"; };
 		B0F6682C81D57A8B1AF2EE72 /* LauncherWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LauncherWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8C85AA81E28B71ADA152B9F /* TransparentSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransparentSetupView.swift; sourceTree = "<group>"; };
 		ECD361203F5A40E41075119E /* SwipeLauncher.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SwipeLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherWidget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -79,8 +83,10 @@
 			isa = PBXGroup;
 			children = (
 				172F17BEA3AE7E2A0B1A942E /* Assets.xcassets */,
+				3E997F6602BD4A973FF97627 /* Calibration.swift */,
 				0D458A28D50A57AEBC0D2884 /* Info.plist */,
 				AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */,
+				C8C85AA81E28B71ADA152B9F /* TransparentSetupView.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -178,7 +184,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C24A9E3F0A531E55F95A0958 /* Calibration.swift in Sources */,
 				3BF715F5463D07D635F0EC79 /* SwipeLauncherApp.swift in Sources */,
+				AB3EE8E1C86337D80DAB9E02 /* TransparentSetupView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,7 +305,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -316,8 +324,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.2.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -363,7 +371,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -376,8 +384,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.2.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.3.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
