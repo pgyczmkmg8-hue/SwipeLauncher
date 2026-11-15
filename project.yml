@@ -7,8 +7,8 @@ settings:
   base:
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: ""
-    MARKETING_VERSION: "1.6.0"
-    CURRENT_PROJECT_VERSION: "10"
+    MARKETING_VERSION: "1.7.0"
+    CURRENT_PROJECT_VERSION: "11"
 targets:
   SwipeLauncher:
     type: application
