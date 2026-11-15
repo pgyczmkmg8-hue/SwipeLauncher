@@ -1,6 +1,5 @@
 import AppIntents
 import Foundation
-import WidgetKit
 
 /// 조합이 완성되는 칸에서 쓰는 버튼: 상태를 비우고 지정한 주소를 바로 연다. (우리 앱을 거치지 않음)
 /// 시스템이 인텐트 메타데이터를 앱 본체에서도 찾기 때문에 앱과 위젯 양쪽에 같이 들어간다.
@@ -16,7 +15,6 @@ struct OpenLinkIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & OpensIntent {
         TapState(seq: [], at: .now).save()
-        WidgetCenter.shared.reloadAllTimelines()
         let target = URL(string: url) ?? URL(string: "about:blank")!
         return .result(opensIntent: OpenURLIntent(target))
     }
@@ -48,7 +46,6 @@ struct TapIntent: AppIntent {
         let r = ComboLogic.resolve(seq: state.seq, tap: cell, combos: cfg.combos)
         let prev = TapState.load()
         TapState(seq: r.new, at: .now, lastCell: cell, count: prev.count + 1).save()
-        WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
 }
