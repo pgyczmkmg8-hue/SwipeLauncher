@@ -6,7 +6,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: MF2FAS39Q3
+    CODE_SIGN_STYLE: Automatic
 targets:
   SwipeLauncher:
     type: application
