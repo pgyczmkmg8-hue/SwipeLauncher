@@ -2,77 +2,45 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
-enum GridChoice: String, AppEnum {
-    case two, three, keypad
-    static var typeDisplayRepresentation: TypeDisplayRepresentation = "칸 구성"
-    static var caseDisplayRepresentations: [GridChoice: DisplayRepresentation] = [
-        .two: "2 × 2", .three: "3 × 3", .keypad: "3 × 4 (키패드)",
-    ]
-    var value: Int { self == .two ? 2 : (self == .three ? 3 : 4) }
-}
-
-/// 앱과 위젯이 App Group 으로 설정을 나눠 쓸 수 있으면 이 값들은 쓰이지 않는다.
-/// (나눠 쓸 수 없는 설치본에서만, 위젯 편집 화면에서 직접 정하는 보조 방식)
-struct LauncherIntent: WidgetConfigurationIntent {
-    static var title: LocalizedStringResource = "조합 설정"
-    static var description = IntentDescription("앱에서 설정이 전달되지 않을 때만 사용합니다. 형식: 순서 주소; 순서 주소")
-
-    @Parameter(title: "칸 구성", default: .two) var grid: GridChoice
-    @Parameter(title: "조합 (예: 11 maps://; 12 music://)", default: "11 maps://; 12 music://; 21 sms://; 22 message://")
-    var combos: String
-    @Parameter(title: "입력 제한시간(초)", default: 4) var timeout: Int
-}
-
 struct Entry: TimelineEntry {
     let date: Date
     let config: LauncherConfig
     let seq: [Int]          // 이 시점까지 누른 칸 번호
-    let direct: Bool        // 위젯 편집값을 직접 쓰는 모드(App Group 없음)
-    let combosText: String
+    let direct: Bool = false
+    let combosText: String = ""
     var flash: Int? = nil   // 방금 누른 칸 (잠깐 살짝 불투명하게 표시)
 }
 
-struct Provider: AppIntentTimelineProvider {
-    private func make(_ c: LauncherIntent?, at now: Date = .now) -> (Entry, LauncherConfig) {
-        var cfg = LauncherConfig.load()
-        let direct = !LauncherConfig.isSharingAvailable
-        var text = ""
-        if direct, let c {
-            cfg.grid = c.grid.value
-            cfg.timeout = Double(min(max(c.timeout, 1), 15))
-            cfg.combos = LauncherConfig.parseCombos(c.combos)
-            text = c.combos
-        }
-        let st = TapState.current(timeout: cfg.timeout)
-        let flashing = now.timeIntervalSince(st.at) < Self.flashDuration
-        return (Entry(date: now, config: cfg, seq: st.seq, direct: direct, combosText: text,
-                      flash: flashing ? st.lastCell : nil), cfg)
-    }
-
+struct Provider: TimelineProvider {
     /// 누른 칸이 불투명하게 보이는 시간(초)
     static let flashDuration: TimeInterval = 0.7
 
-    func placeholder(in context: Context) -> Entry { make(nil).0 }
-
-    func snapshot(for configuration: LauncherIntent, in context: Context) async -> Entry {
-        make(configuration).0
+    private func make(at now: Date = .now) -> (Entry, LauncherConfig) {
+        let cfg = LauncherConfig.load()
+        let st = TapState.current(timeout: cfg.timeout)
+        let flashing = now.timeIntervalSince(st.at) < Self.flashDuration
+        return (Entry(date: now, config: cfg, seq: st.seq, flash: flashing ? st.lastCell : nil), cfg)
     }
 
-    func timeline(for configuration: LauncherIntent, in context: Context) async -> Timeline<Entry> {
-        let (e, cfg) = make(configuration)
+    func placeholder(in context: Context) -> Entry { make().0 }
+
+    func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) {
+        completion(make().0)
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
+        let (e, cfg) = make()
         let st = TapState.current(timeout: cfg.timeout)
         var entries = [e]
         // 누름 표시를 거둔 화면
         if e.flash != nil {
-            entries.append(Entry(date: st.at.addingTimeInterval(Self.flashDuration + 0.05), config: cfg, seq: st.seq,
-                                 direct: e.direct, combosText: e.combosText, flash: nil))
+            entries.append(Entry(date: st.at.addingTimeInterval(Self.flashDuration + 0.05), config: cfg, seq: st.seq, flash: nil))
         }
         // 제한시간이 지나면 입력 상태를 비운 화면으로 바꾼다.
         if !st.seq.isEmpty {
-            entries.append(Entry(date: st.at.addingTimeInterval(cfg.timeout + 0.2), config: cfg, seq: [],
-                                 direct: e.direct, combosText: e.combosText, flash: nil))
+            entries.append(Entry(date: st.at.addingTimeInterval(cfg.timeout + 0.2), config: cfg, seq: [], flash: nil))
         }
-        return Timeline(entries: entries, policy: .never)
+        completion(Timeline(entries: entries, policy: .never))
     }
 }
 
@@ -133,7 +101,7 @@ struct LauncherWidget: Widget {
     }
 
     var body: some WidgetConfiguration {
-        AppIntentConfiguration(kind: "LauncherWidget", intent: LauncherIntent.self, provider: Provider()) { entry in
+        StaticConfiguration(kind: "LauncherWidget", provider: Provider()) { entry in
             GridView(entry: entry)
         }
         .configurationDisplayName("투명 런처")
