@@ -124,7 +124,6 @@ struct GridView: View {
     }
 }
 
-@main
 struct LauncherWidget: Widget {
     /// 지원하는 크기. 가장 큰 크기(페이지를 채우는 위젯)는 이를 지원하는 기기에서만 목록에 나타난다.
     static var families: [WidgetFamily] {
