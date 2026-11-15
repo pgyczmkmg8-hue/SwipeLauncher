@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <objc/message.h>
 #import <objc/runtime.h>
+#include <string.h>
 
 static IMP gOriginal = NULL;
 static NSString *const kWidgetKind = @"LauncherWidget";
@@ -30,23 +31,23 @@ static id ISPatchResult(id result) {
         if (!iv) return result;
         void **slot = (void **)((char *)(__bridge void *)result + ivar_getOffset(iv));
         id widgets = (__bridge id)(*slot);
+        if (!widgets) return result;
+
+        // Swift 네이티브 배열 저장소(_ContiguousArrayStorage)만 다룬다: [isa, refcount, count, capacity, 항목...]
+        const char *cn = class_getName(object_getClass(widgets));
+        if (!cn || strncmp(cn, "_TtGCs23_ContiguousArrayStorage", 31) != 0) return result;
         if (![widgets respondsToSelector:@selector(count)] || ![widgets respondsToSelector:@selector(objectAtIndex:)]) return result;
 
         NSUInteger n = [widgets count];
-        NSMutableArray *patched = [NSMutableArray arrayWithCapacity:n];
-        BOOL changed = NO;
+        void **elems = (void **)((char *)(__bridge void *)widgets + 32);
         for (NSUInteger i = 0; i < n; i++) {
             id d = [widgets objectAtIndex:i];
             id kind = [d respondsToSelector:NSSelectorFromString(@"kind")] ? [d valueForKey:@"kind"] : nil;
-            if ([kind isEqual:kWidgetKind]) {
-                id p = ISPatchDescriptor(d);
-                if (p != d) changed = YES;
-                [patched addObject:p];
-            } else {
-                [patched addObject:d];
-            }
+            if (![kind isEqual:kWidgetKind]) continue;
+            id p = ISPatchDescriptor(d);
+            if (p == d) continue;
+            elems[i] = (void *)CFBridgingRetain(p);  // 원래 항목은 해제하지 않고 둔다(안전 우선)
         }
-        if (changed) *slot = (void *)CFBridgingRetain([patched copy]);
     } @catch (NSException *e) {
         // 실패해도 원래 결과를 그대로 돌려준다
     }
@@ -61,6 +62,9 @@ static void ISHooked(id self, SEL _cmd, void (^completion)(id)) {
 }
 
 __attribute__((constructor)) static void ISInstallTransparentHook(void) {
+#ifdef IS_DISABLE_HOOK
+    return;
+#endif
     Class cls = NSClassFromString(@"_TtCC9WidgetKit24WidgetExtensionXPCServer14ExportedObject");
     SEL sel = NSSelectorFromString(@"getAllCurrentDescriptorsWithCompletion:");
     Method m = cls ? class_getInstanceMethod(cls, sel) : NULL;
