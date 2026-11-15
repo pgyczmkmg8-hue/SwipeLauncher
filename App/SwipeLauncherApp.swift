@@ -8,6 +8,14 @@ struct SwipeLauncherApp: App {
         WindowGroup {
             ContentView()
                 .task { WidgetCenter.shared.reloadAllTimelines() }
+                .onOpenURL { url in
+                    // 위젯 칸 탭: swipelauncher://open?u=<대상 주소> → 대상 앱 실행
+                    guard url.scheme == "swipelauncher", url.host == "open",
+                          let u = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                            .queryItems?.first(where: { $0.name == "u" })?.value,
+                          let target = URL(string: u) else { return }
+                    UIApplication.shared.open(target)
+                }
         }
     }
 }

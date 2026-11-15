@@ -79,15 +79,24 @@ struct GridView: View {
         .containerBackground(for: .widget) { Color.clear }
     }
 
+    /// 우리 앱 주소(swipelauncher://open?u=...)로 보내면 앱이 즉시 대상 앱을 연다.
+    private static func relayURL(for raw: String) -> URL? {
+        guard !raw.isEmpty, URL(string: raw) != nil else { return nil }
+        var c = URLComponents()
+        c.scheme = "swipelauncher"
+        c.host = "open"
+        c.queryItems = [URLQueryItem(name: "u", value: raw)]
+        return c.url
+    }
+
     @ViewBuilder
     private func cell(_ index: Int) -> some View {
         let raw = config.urls[index].trimmingCharacters(in: .whitespaces)
         let area = Color.black.opacity(0.03)
             .contentShape(Rectangle())
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        if URL(string: raw) != nil, !raw.isEmpty {
-            Button(intent: OpenLinkIntent(url: raw)) { area }
-                .buttonStyle(.plain)
+        if let target = Self.relayURL(for: raw) {
+            Link(destination: target) { area }
         } else {
             area
         }
