@@ -1,10 +1,14 @@
 import SwiftUI
 import UIKit
+import WidgetKit
 
 @main
 struct SwipeLauncherApp: App {
     var body: some Scene {
-        WindowGroup { ContentView() }
+        WindowGroup {
+            ContentView()
+                .task { WidgetCenter.shared.reloadAllTimelines() }
+        }
     }
 }
 

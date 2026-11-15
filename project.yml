@@ -7,13 +7,17 @@ settings:
   base:
     SWIFT_VERSION: "5.0"
     DEVELOPMENT_TEAM: ""
-    MARKETING_VERSION: "1.3.0"
-    CURRENT_PROJECT_VERSION: "4"
+    MARKETING_VERSION: "1.4.0"
+    CURRENT_PROJECT_VERSION: "5"
 targets:
   SwipeLauncher:
     type: application
     platform: iOS
-    sources: [App]
+    sources: [App, Shared]
+    entitlements:
+      path: App/App.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.MACHU.Launcher]
     info:
       path: App/Info.plist
       properties:
@@ -35,7 +39,11 @@ targets:
   LauncherWidget:
     type: app-extension
     platform: iOS
-    sources: [Widget]
+    sources: [Widget, Shared]
+    entitlements:
+      path: Widget/Widget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.MACHU.Launcher]
     info:
       path: Widget/Info.plist
       properties:
