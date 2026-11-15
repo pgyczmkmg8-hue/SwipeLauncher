@@ -11,6 +11,7 @@
 
 static IMP gOriginal = NULL;
 static NSString *const kWidgetKind = @"LauncherWidget";
+static NSString *const kDiagKind = @"DiagWidget2";
 
 static id ISPatchDescriptor(id desc) {
     if (![desc respondsToSelector:@selector(mutableCopy)]) return desc;

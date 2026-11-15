@@ -25,22 +25,28 @@ struct DiagProvider: TimelineProvider {
 
 struct DiagView: View {
     let entry: DiagEntry
+    let variant: Int   // 1: 기본 위젯, 2: 투명 처리가 적용되는 위젯
 
     var body: some View {
         VStack(spacing: 6) {
-            Text("진단 · 입력 \(entry.count)회 · 마지막 \(entry.lastCell.map(String.init) ?? "-")번 · 그룹 \(entry.groupOK ? "OK" : "X")")
+            Text("진단\(variant) · 입력 \(entry.count)회 · 마지막 \(entry.lastCell.map(String.init) ?? "-")번 · 그룹 \(entry.groupOK ? "OK" : "X")")
                 .font(.system(size: 11, weight: .semibold))
                 .multilineTextAlignment(.center)
-            button("A 진하게", cell: 1, fill: Color.blue.opacity(1))
-            button("B 거의 투명", cell: 2, fill: Color.blue.opacity(0.004))
-            button("C 옅게", cell: 3, fill: Color.blue.opacity(0.08))
+            if variant == 1 {
+                button("A 진하게", TapIntent(cell: 1), fill: Color.blue.opacity(1))
+                button("B 거의 투명", TapIntent(cell: 2), fill: Color.blue.opacity(0.004))
+                button("D 매개변수 포함", TapIntent(cell: 4, combosText: "11 maps://", timeout: 4), fill: Color.blue.opacity(0.3))
+            } else {
+                button("E 투명처리 · 기본", TapIntent(cell: 5), fill: Color.blue.opacity(1))
+                button("F 투명처리 · 매개변수", TapIntent(cell: 6, combosText: "11 maps://", timeout: 4), fill: Color.blue.opacity(0.3))
+            }
         }
         .padding(6)
-        .containerBackground(for: .widget) { Color.white }
+        .containerBackground(for: .widget) { variant == 1 ? Color.white : Color.clear }
     }
 
-    private func button(_ title: String, cell: Int, fill: Color) -> some View {
-        Button(intent: TapIntent(cell: cell)) {
+    private func button(_ title: String, _ intent: TapIntent, fill: Color) -> some View {
+        Button(intent: intent) {
             ZStack {
                 fill
                 Text(title).font(.system(size: 11)).foregroundStyle(.black)
@@ -56,11 +62,24 @@ struct DiagView: View {
 struct DiagWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "DiagWidget", provider: DiagProvider()) { entry in
-            DiagView(entry: entry)
+            DiagView(entry: entry, variant: 1)
         }
         .configurationDisplayName("투명 런처 진단")
         .description("칸 입력이 실행되는지 확인하는 진단용 위젯입니다. 버튼을 눌러 입력 횟수가 늘어나는지 보세요.")
         .supportedFamilies([.systemMedium])
+    }
+}
+
+/// 진짜 위젯과 같은 투명 처리가 적용되는 진단 위젯
+struct DiagWidget2: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "DiagWidget2", provider: DiagProvider()) { entry in
+            DiagView(entry: entry, variant: 2)
+        }
+        .configurationDisplayName("투명 런처 진단 (투명)")
+        .description("투명 처리가 적용된 진단 위젯입니다.")
+        .supportedFamilies([.systemMedium])
+        .contentMarginsDisabled()
     }
 }
 
@@ -69,5 +88,6 @@ struct LauncherBundle: WidgetBundle {
     var body: some Widget {
         LauncherWidget()
         DiagWidget()
+        DiagWidget2()
     }
 }
