@@ -29,12 +29,21 @@ struct TapIntent: AppIntent {
     static var isDiscoverable: Bool = false
 
     @Parameter(title: "칸 번호") var cell: Int
+    /// App Group 을 못 쓰는 설치본에서 위젯이 직접 넘겨주는 조합(문자열)과 제한시간
+    @Parameter(title: "조합") var combosText: String
+    @Parameter(title: "제한시간") var timeout: Int
 
-    init() { self.cell = 0 }
-    init(cell: Int) { self.cell = cell }
+    init() { self.cell = 0; self.combosText = ""; self.timeout = 4 }
+    init(cell: Int, combosText: String = "", timeout: Int = 4) {
+        self.cell = cell; self.combosText = combosText; self.timeout = timeout
+    }
 
     func perform() async throws -> some IntentResult {
-        let cfg = LauncherConfig.load()
+        var cfg = LauncherConfig.load()
+        if !LauncherConfig.isSharingAvailable {
+            cfg.combos = LauncherConfig.parseCombos(combosText)
+            cfg.timeout = Double(min(max(timeout, 1), 15))
+        }
         let state = TapState.current(timeout: cfg.timeout)
         let r = ComboLogic.resolve(seq: state.seq, tap: cell, combos: cfg.combos)
         TapState(seq: r.new, at: .now).save()

@@ -2,29 +2,66 @@ import AppIntents
 import SwiftUI
 import WidgetKit
 
+enum GridChoice: String, AppEnum {
+    case two, three, keypad
+    static var typeDisplayRepresentation: TypeDisplayRepresentation = "칸 구성"
+    static var caseDisplayRepresentations: [GridChoice: DisplayRepresentation] = [
+        .two: "2 × 2", .three: "3 × 3", .keypad: "3 × 4 (키패드)",
+    ]
+    var value: Int { self == .two ? 2 : (self == .three ? 3 : 4) }
+}
+
+/// 앱과 위젯이 App Group 으로 설정을 나눠 쓸 수 있으면 이 값들은 쓰이지 않는다.
+/// (나눠 쓸 수 없는 설치본에서만, 위젯 편집 화면에서 직접 정하는 보조 방식)
+struct LauncherIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "조합 설정"
+    static var description = IntentDescription("앱에서 설정이 전달되지 않을 때만 사용합니다. 형식: 순서 주소; 순서 주소")
+
+    @Parameter(title: "칸 구성", default: .two) var grid: GridChoice
+    @Parameter(title: "조합 (예: 11 maps://; 12 music://)", default: "11 maps://; 12 music://; 21 sms://; 22 message://")
+    var combos: String
+    @Parameter(title: "입력 제한시간(초)", default: 4) var timeout: Int
+}
+
 struct Entry: TimelineEntry {
     let date: Date
     let config: LauncherConfig
     let seq: [Int]          // 이 시점까지 누른 칸 번호
+    let direct: Bool        // 위젯 편집값을 직접 쓰는 모드(App Group 없음)
+    let combosText: String
 }
 
-struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> Entry { Entry(date: .now, config: LauncherConfig(), seq: []) }
-
-    func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) {
-        let c = LauncherConfig.load()
-        completion(Entry(date: .now, config: c, seq: TapState.current(timeout: c.timeout).seq))
+struct Provider: AppIntentTimelineProvider {
+    private func make(_ c: LauncherIntent?, at now: Date = .now) -> (Entry, LauncherConfig) {
+        var cfg = LauncherConfig.load()
+        let direct = !LauncherConfig.isSharingAvailable
+        var text = ""
+        if direct, let c {
+            cfg.grid = c.grid.value
+            cfg.timeout = Double(min(max(c.timeout, 1), 15))
+            cfg.combos = LauncherConfig.parseCombos(c.combos)
+            text = c.combos
+        }
+        let st = TapState.current(timeout: cfg.timeout)
+        return (Entry(date: now, config: cfg, seq: st.seq, direct: direct, combosText: text), cfg)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        let c = LauncherConfig.load()
-        let st = TapState.current(timeout: c.timeout)
-        var entries = [Entry(date: .now, config: c, seq: st.seq)]
+    func placeholder(in context: Context) -> Entry { make(nil).0 }
+
+    func snapshot(for configuration: LauncherIntent, in context: Context) async -> Entry {
+        make(configuration).0
+    }
+
+    func timeline(for configuration: LauncherIntent, in context: Context) async -> Timeline<Entry> {
+        let (e, cfg) = make(configuration)
+        var entries = [e]
         // 제한시간이 지나면 입력 상태를 비운 화면으로 바꾼다.
-        if !st.seq.isEmpty {
-            entries.append(Entry(date: st.at.addingTimeInterval(c.timeout + 0.2), config: c, seq: []))
+        if !e.seq.isEmpty {
+            let at = TapState.current(timeout: cfg.timeout).at
+            entries.append(Entry(date: at.addingTimeInterval(cfg.timeout + 0.2), config: cfg, seq: [],
+                                 direct: e.direct, combosText: e.combosText))
         }
-        completion(Timeline(entries: entries, policy: .never))
+        return Timeline(entries: entries, policy: .never)
     }
 }
 
@@ -32,12 +69,12 @@ struct GridView: View {
     let entry: Entry
 
     var body: some View {
-        let n = entry.config.grid
+        let rows = entry.config.rows, cols = entry.config.cols
         VStack(spacing: 0) {
-            ForEach(0..<n, id: \.self) { row in
+            ForEach(0..<rows, id: \.self) { row in
                 HStack(spacing: 0) {
-                    ForEach(0..<n, id: \.self) { col in
-                        cell(row * n + col + 1)
+                    ForEach(0..<cols, id: \.self) { col in
+                        cell(row * cols + col + 1)
                     }
                 }
             }
@@ -57,7 +94,8 @@ struct GridView: View {
             Button(intent: OpenLinkIntent(url: url)) { area }.buttonStyle(.plain)
         } else if !r.new.isEmpty || !entry.seq.isEmpty {
             // 조합 진행 중 → 번호만 기록
-            Button(intent: TapIntent(cell: number)) { area }.buttonStyle(.plain)
+            Button(intent: TapIntent(cell: number, combosText: entry.direct ? entry.combosText : "",
+                                     timeout: Int(entry.config.timeout))) { area }.buttonStyle(.plain)
         } else {
             area
         }
@@ -66,13 +104,20 @@ struct GridView: View {
 
 @main
 struct LauncherWidget: Widget {
+    /// 지원하는 크기. 가장 큰 크기(페이지를 채우는 위젯)는 이를 지원하는 기기에서만 목록에 나타난다.
+    static var families: [WidgetFamily] {
+        var f: [WidgetFamily] = [.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge]
+        if #available(iOS 27.0, *) { f.append(.systemExtraLargePortrait) }
+        return f
+    }
+
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "LauncherWidget", provider: Provider()) { entry in
+        AppIntentConfiguration(kind: "LauncherWidget", intent: LauncherIntent.self, provider: Provider()) { entry in
             GridView(entry: entry)
         }
         .configurationDisplayName("투명 런처")
         .description("투명한 칸을 정해진 순서로 누르면 앱이 열립니다. 조합은 앱에서 정합니다.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies(Self.families)
         .contentMarginsDisabled()
     }
 }

@@ -67,9 +67,13 @@ struct ContentView: View {
                 if !sharing {
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("앱과 위젯 사이 저장소(App Group)를 쓸 수 없어서, 여기서 정한 설정이 위젯에 전달되지 않습니다.")
+                            Text("앱과 위젯 사이 저장소(App Group)를 쓸 수 없어서, 여기서 정한 설정이 위젯에 자동으로 전달되지 않습니다. 대신 아래 '위젯 편집용 문자열 복사'로 복사해서, 위젯을 길게 눌러 '위젯 편집'의 '조합' 칸에 붙여넣으세요.")
                                 .font(.callout)
                                 .foregroundStyle(.red)
+                            Button("위젯 편집용 문자열 복사") {
+                                UIPasteboard.general.string = config.combosText()
+                                testResult = "복사했습니다: " + config.combosText()
+                            }
                             Text(LauncherConfig.diagnostics())
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -80,15 +84,16 @@ struct ContentView: View {
 
                 Section {
                     Picker("칸 구성", selection: $config.grid) {
-                        Text("2 × 2").tag(2)
-                        Text("3 × 3").tag(3)
+                        Text("2×2").tag(2)
+                        Text("3×3").tag(3)
+                        Text("3×4 키패드").tag(4)
                     }
                     .pickerStyle(.segmented)
                     numberGrid
                 } header: {
                     Text("칸 번호")
                 } footer: {
-                    Text("위젯의 칸에는 왼쪽 위부터 가로로 이어서 번호가 붙습니다. 위젯은 투명해서 번호가 보이지 않으니 위 그림을 기준으로 누르세요.")
+                    Text("위젯의 칸은 왼쪽 위부터 가로로 이어서 위 그림과 같은 순서입니다. 위젯은 투명해서 글자가 보이지 않으니 위 그림을 기준으로 누르세요. 키패드는 조합에 1~9, 0, *, # 를 쓸 수 있습니다.")
                 }
 
                 Section {
@@ -97,10 +102,11 @@ struct ContentView: View {
                             HStack {
                                 Text("순서").font(.footnote).foregroundStyle(.secondary).frame(width: 36, alignment: .leading)
                                 TextField("예: 1123", text: $combo.seq)
-                                    .keyboardType(.numberPad)
+                                    .keyboardType(.numbersAndPunctuation)
+                                    .autocorrectionDisabled()
                                     .font(.title3.monospacedDigit())
                                     .onChange(of: combo.seq) { _, v in
-                                        let f = String(v.filter { "123456789".contains($0) })
+                                        let f = String(v.filter { "1234567890*#".contains($0) })
                                         if f != v { combo.seq = f }
                                     }
                             }
@@ -169,12 +175,12 @@ struct ContentView: View {
     }
 
     private var numberGrid: some View {
-        let n = config.grid
+        let rows = config.rows, cols = config.cols
         return VStack(spacing: 6) {
-            ForEach(0..<n, id: \.self) { r in
+            ForEach(0..<rows, id: \.self) { r in
                 HStack(spacing: 6) {
-                    ForEach(0..<n, id: \.self) { c in
-                        Text("\(r * n + c + 1)")
+                    ForEach(0..<cols, id: \.self) { c in
+                        Text(ComboLogic.symbol(r * cols + c + 1))
                             .font(.title2.weight(.semibold).monospacedDigit())
                             .frame(maxWidth: .infinity, minHeight: 44)
                             .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
@@ -188,8 +194,8 @@ struct ContentView: View {
 
     private func warning(for combo: Combo) -> String? {
         let d = ComboLogic.digits(combo.seq)
-        if d.isEmpty { return combo.seq.isEmpty ? nil : "1~9 사이 숫자만 쓸 수 있습니다." }
-        if d.contains(where: { $0 > config.grid * config.grid }) { return "현재 \(config.grid)×\(config.grid) 구성에 없는 칸 번호가 있습니다." }
+        if d.isEmpty { return combo.seq.isEmpty ? nil : "1~9, 0, *, # 만 쓸 수 있습니다." }
+        if d.contains(where: { $0 > config.cellCount }) { return "현재 칸 구성에 없는 칸이 있습니다." }
         let others = config.combos.filter { $0.id != combo.id }.map { ComboLogic.digits($0.seq) }
         if others.contains(d) { return "같은 순서의 조합이 이미 있습니다." }
         if others.contains(where: { $0.count < d.count && Array(d.prefix($0.count)) == $0 }) {

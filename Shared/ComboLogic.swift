@@ -1,9 +1,16 @@
 import Foundation
 
 enum ComboLogic {
-    /// "1123" → [1,1,2,3]. 1~9 가 아닌 글자는 무시한다.
+    /// 칸에 쓰는 글자. 순서대로 칸 번호 1~12 (키패드: 1~9, *, 0, #)
+    static let symbols: [Character] = ["1","2","3","4","5","6","7","8","9","*","0","#"]
+
+    static func symbol(_ cell: Int) -> String {
+        (1...symbols.count).contains(cell) ? String(symbols[cell - 1]) : "?"
+    }
+
+    /// "11*0" → [1,1,10,11]. 칸에 없는 글자는 무시한다.
     static func digits(_ s: String) -> [Int] {
-        s.compactMap { $0.wholeNumberValue }.filter { (1...9).contains($0) }
+        s.compactMap { ch in symbols.firstIndex(of: ch).map { $0 + 1 } }
     }
 
     /// 지금까지 누른 seq 에 tap 을 더했을 때의 결과.
