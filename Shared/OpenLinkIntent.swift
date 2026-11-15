@@ -46,7 +46,7 @@ struct TapIntent: AppIntent {
         }
         let state = TapState.current(timeout: cfg.timeout)
         let r = ComboLogic.resolve(seq: state.seq, tap: cell, combos: cfg.combos)
-        TapState(seq: r.new, at: .now).save()
+        TapState(seq: r.new, at: .now, lastCell: cell).save()
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }

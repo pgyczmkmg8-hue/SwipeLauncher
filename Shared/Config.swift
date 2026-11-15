@@ -147,6 +147,7 @@ struct LauncherConfig: Codable, Equatable {
 struct TapState: Codable {
     var seq: [Int] = []
     var at: Date = .distantPast
+    var lastCell: Int? = nil      // 마지막으로 누른 칸(누름 표시용)
 
     private static let key = "tapstate.v1"
 
