@@ -76,11 +76,9 @@ struct GridView: View {
     }
 
     private static func relayURL(_ raw: String) -> URL? {
-        guard !raw.isEmpty, URL(string: raw) != nil else { return nil }
-        var c = URLComponents()
-        c.scheme = "swipelauncher"; c.host = "open"
-        c.queryItems = [URLQueryItem(name: "u", value: raw)]
-        return c.url
+        guard !raw.isEmpty, URL(string: raw) != nil,
+              let enc = raw.addingPercentEncoding(withAllowedCharacters: .alphanumerics) else { return nil }
+        return URL(string: "swipelauncher://open?u=" + enc)
     }
 
     @ViewBuilder

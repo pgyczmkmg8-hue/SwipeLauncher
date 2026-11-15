@@ -4,18 +4,67 @@ import WidgetKit
 
 @main
 struct SwipeLauncherApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .task { WidgetCenter.shared.reloadAllTimelines() }
                 .onOpenURL { url in
-                    // 위젯 칸 탭: swipelauncher://open?u=<대상 주소> → 대상 앱 실행
+                    // 위젯 칸 탭(조합 완성): swipelauncher://open?u=<대상 주소> → 대상 앱 실행
                     guard url.scheme == "swipelauncher", url.host == "open",
                           let u = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                             .queryItems?.first(where: { $0.name == "u" })?.value,
                           let target = URL(string: u) else { return }
-                    UIApplication.shared.open(target)
+                    RelayOpener.shared.open(target)
+                    TapState(seq: [], at: .now).save()    // 입력 상태 정리는 열기 요청 뒤에
                 }
+                .onChange(of: scenePhase) { _, phase in
+                    // 앱이 막 켜지는 중이라 열기가 무시됐다면, 활성화된 뒤 다시 시도한다
+                    if phase == .active { RelayOpener.shared.retryPending() }
+                }
+        }
+    }
+}
+
+/// 위젯에서 넘어온 대상 주소를 연다. 앱이 켜지는 도중에는 열기가 무시될 수 있어서, 실패하면 짧게 재시도하고 결과를 남긴다.
+final class RelayOpener {
+    static let shared = RelayOpener()
+    private var pending: URL?
+    private static let logKey = "relay.log.v1"
+
+    static var lastLog: String {
+        UserDefaults.standard.string(forKey: logKey) ?? "기록 없음"
+    }
+
+    private func record(_ text: String) {
+        let f = DateFormatter(); f.dateFormat = "HH:mm:ss"
+        UserDefaults.standard.set("\(f.string(from: Date())) \(text)", forKey: Self.logKey)
+    }
+
+    func open(_ url: URL) {
+        pending = url
+        attempt(url, n: 0)
+    }
+
+    func retryPending() {
+        if let url = pending { attempt(url, n: 0) }
+    }
+
+    private func attempt(_ url: URL, n: Int) {
+        UIApplication.shared.open(url, options: [:]) { [weak self] ok in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                if ok {
+                    self.pending = nil
+                    self.record("열림 · \(url.absoluteString) · 시도 \(n + 1)회")
+                } else if n < 6 {
+                    self.record("실패(재시도 \(n + 1)) · \(url.absoluteString)")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { self.attempt(url, n: n + 1) }
+                } else {
+                    self.record("끝내 실패 · \(url.absoluteString) (스킴 확인)")
+                }
+            }
         }
     }
 }
@@ -165,6 +214,7 @@ struct ContentView: View {
                     if sharing, let c = st.lastCell {
                         LabeledContent("마지막 입력", value: "\(ComboLogic.symbol(c))번 칸, \(Int(Date().timeIntervalSince(st.at)))초 전")
                     }
+                    LabeledContent("마지막 열기", value: RelayOpener.lastLog)
                     Button("새로고침") { sharing = LauncherConfig.isSharingAvailable; config = LauncherConfig.load() }
                 } header: {
                     Text("진단")
