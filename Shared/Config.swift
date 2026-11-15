@@ -12,6 +12,7 @@ struct Combo: Codable, Equatable, Identifiable {
 struct LauncherConfig: Codable, Equatable {
     var grid: Int = 2            // 2(2×2), 3(3×3), 4(3열×4줄 키패드)
     var timeout: Double = 4      // 입력 제한시간(초): 마지막 탭 뒤 이 시간이 지나면 처음부터
+    var openDirect: Bool = false // true: 인텐트로 바로 열기(실험), false: 앱을 거쳐 열기(폰에서 확인된 방식)
     var combos: [Combo] = [
         Combo(seq: "11", url: "maps://"),
         Combo(seq: "12", url: "music://"),

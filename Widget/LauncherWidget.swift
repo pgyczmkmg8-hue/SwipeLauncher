@@ -93,6 +93,14 @@ struct GridView: View {
         .containerBackground(for: .widget) { Color.clear }
     }
 
+    private static func relayURL(_ raw: String) -> URL? {
+        guard !raw.isEmpty, URL(string: raw) != nil else { return nil }
+        var c = URLComponents()
+        c.scheme = "swipelauncher"; c.host = "open"
+        c.queryItems = [URLQueryItem(name: "u", value: raw)]
+        return c.url
+    }
+
     @ViewBuilder
     private func cell(_ number: Int) -> some View {
         // 눈에 보이지 않을 만큼만 칠해서(알파 1/255 수준) 터치 영역으로 인식되게 한다.
@@ -101,9 +109,12 @@ struct GridView: View {
             .contentShape(Rectangle())
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         let r = ComboLogic.resolve(seq: entry.seq, tap: number, combos: entry.config.combos)
-        if let url = r.url {
-            // 이 칸을 누르면 조합이 완성된다 → 바로 앱 열기
+        if let url = r.url, entry.config.openDirect || entry.direct {
+            // (실험) 인텐트로 바로 열기
             Button(intent: OpenLinkIntent(url: url)) { area }.buttonStyle(.plain)
+        } else if let url = r.url, let relay = Self.relayURL(url) {
+            // 조합 완성 → 우리 앱 주소로 보내면 앱이 즉시 대상 앱을 연다 (폰에서 확인된 방식)
+            Link(destination: relay) { area }
         } else {
             // 진행 중이거나 조합과 무관한 칸도 반드시 버튼으로 받는다.
             // (일반 영역으로 두면 시스템 기본 동작인 '위젯 앱 열기'가 실행된다)

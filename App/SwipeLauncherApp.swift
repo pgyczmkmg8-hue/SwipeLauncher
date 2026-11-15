@@ -140,6 +140,12 @@ struct ContentView: View {
                 }
 
                 Section {
+                    Toggle("인텐트로 바로 열기 (실험)", isOn: $config.openDirect)
+                } footer: {
+                    Text("끄면(기본) 조합이 완성될 때 우리 앱이 잠깐 열렸다가 대상 앱으로 넘어갑니다. 이 방식이 폰에서 확인된 방식입니다. 켜면 앱을 거치지 않지만 환경에 따라 동작하지 않을 수 있습니다.")
+                }
+
+                Section {
                     Stepper(value: $config.timeout, in: 1...15, step: 1) {
                         Text("입력 제한시간  \(Int(config.timeout))초")
                     }
