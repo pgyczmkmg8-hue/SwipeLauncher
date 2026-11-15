@@ -21,6 +21,8 @@ struct OpenLinkIntent: AppIntent {
 }
 
 /// 조합이 아직 끝나지 않은 칸에서 쓰는 버튼: 누른 번호만 기록한다.
+/// 화면이 늦게 갱신돼 마지막 칸이 아직 일반 입력 버튼일 때 조합이 완성되면, 입력을 버리지 않고
+/// '완성 대기'로 기록한다. 위젯이 다시 그려지면 그 칸이 앱 열기 버튼이 되어 한 번 더 누르면 열린다.
 struct TapIntent: AppIntent {
     static var title: LocalizedStringResource = "칸 입력"
     static var openAppWhenRun: Bool = false
@@ -45,7 +47,7 @@ struct TapIntent: AppIntent {
         let state = TapState.current(timeout: cfg.timeout)
         let r = ComboLogic.resolve(seq: state.seq, tap: cell, combos: cfg.combos)
         let prev = TapState.load()
-        TapState(seq: r.new, at: .now, lastCell: cell, count: prev.count + 1).save()
+        TapState(seq: r.new, at: .now, lastCell: cell, count: prev.count + 1, readyURL: r.url).save()
         return .result()
     }
 }

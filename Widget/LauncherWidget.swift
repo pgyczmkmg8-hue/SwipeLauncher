@@ -6,6 +6,8 @@ struct Entry: TimelineEntry {
     let date: Date
     let config: LauncherConfig
     let seq: [Int]          // 이 시점까지 누른 칸 번호
+    var readyURL: String? = nil   // 놓친 마지막 입력으로 이미 완성된 조합(마지막으로 누른 칸을 다시 누르면 연다)
+    var readyCell: Int? = nil
     let direct: Bool = false
     let combosText: String = ""
     var flash: Int? = nil   // 방금 누른 칸 (잠깐 살짝 불투명하게 표시)
@@ -19,7 +21,8 @@ struct Provider: TimelineProvider {
         let cfg = LauncherConfig.load()
         let st = TapState.current(timeout: cfg.timeout)
         let flashing = now.timeIntervalSince(st.at) < Self.flashDuration
-        return (Entry(date: now, config: cfg, seq: st.seq, flash: flashing ? st.lastCell : nil), cfg)
+        return (Entry(date: now, config: cfg, seq: st.seq, readyURL: st.readyURL, readyCell: st.lastCell,
+                      flash: flashing ? st.lastCell : nil), cfg)
     }
 
     func placeholder(in context: Context) -> Entry { make().0 }
@@ -34,10 +37,11 @@ struct Provider: TimelineProvider {
         var entries = [e]
         // 누름 표시를 거둔 화면
         if e.flash != nil {
-            entries.append(Entry(date: st.at.addingTimeInterval(Self.flashDuration + 0.05), config: cfg, seq: st.seq, flash: nil))
+            entries.append(Entry(date: st.at.addingTimeInterval(Self.flashDuration + 0.05), config: cfg, seq: st.seq,
+                                 readyURL: st.readyURL, readyCell: st.lastCell, flash: nil))
         }
         // 제한시간이 지나면 입력 상태를 비운 화면으로 바꾼다.
-        if !st.seq.isEmpty {
+        if !st.seq.isEmpty || st.readyURL != nil {
             entries.append(Entry(date: st.at.addingTimeInterval(cfg.timeout + 0.2), config: cfg, seq: [], flash: nil))
         }
         completion(Timeline(entries: entries, policy: .never))
@@ -61,6 +65,13 @@ struct GridView: View {
         .containerBackground(for: .widget) { Color.clear }
     }
 
+    /// 칸을 눌렀을 때의 결과. 놓친 마지막 입력으로 이미 완성된 조합이면 그 칸을 다시 눌러 연다.
+    private func resolved(_ number: Int) -> (new: [Int], url: String?) {
+        let r = ComboLogic.resolve(seq: entry.seq, tap: number, combos: entry.config.combos)
+        if r.url == nil, let ready = entry.readyURL, entry.readyCell == number { return (new: [], url: ready) }
+        return r
+    }
+
     private static func relayURL(_ raw: String) -> URL? {
         guard !raw.isEmpty, URL(string: raw) != nil else { return nil }
         var c = URLComponents()
@@ -76,7 +87,7 @@ struct GridView: View {
         let area = (entry.flash == number ? Color.white.opacity(0.28) : Color.black.opacity(0.004))
             .contentShape(Rectangle())
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        let r = ComboLogic.resolve(seq: entry.seq, tap: number, combos: entry.config.combos)
+        let r = resolved(number)
         if let url = r.url, entry.config.openDirect, !entry.direct {
             // (실험) 인텐트로 바로 열기
             Button(intent: OpenLinkIntent(url: url)) { area }.buttonStyle(.plain)

@@ -173,6 +173,7 @@ struct TapState: Codable {
     var at: Date = .distantPast
     var lastCell: Int? = nil      // 마지막으로 누른 칸(누름 표시용)
     var count: Int = 0            // 인텐트가 실행된 총 횟수(진단용)
+    var readyURL: String? = nil   // 화면이 늦어 놓친 마지막 입력으로 이미 완성된 조합의 주소 (그 칸을 한 번 더 누르면 연다)
 
     private static let key = "tapstate.v1"
 
