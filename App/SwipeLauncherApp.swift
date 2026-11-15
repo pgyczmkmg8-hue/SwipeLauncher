@@ -66,9 +66,15 @@ struct ContentView: View {
             Form {
                 if !sharing {
                     Section {
-                        Text("이 설치본은 앱과 위젯 사이 저장소(App Group)를 쓸 수 없어서, 여기서 정한 설정이 위젯에 전달되지 않습니다. 재서명 도구에서 App Group 권한을 유지하도록 설치해 보세요.")
-                            .font(.callout)
-                            .foregroundStyle(.red)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("앱과 위젯 사이 저장소(App Group)를 쓸 수 없어서, 여기서 정한 설정이 위젯에 전달되지 않습니다.")
+                                .font(.callout)
+                                .foregroundStyle(.red)
+                            Text(LauncherConfig.diagnostics())
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                        }
                     }
                 }
 

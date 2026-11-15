@@ -22,16 +22,53 @@ struct LauncherConfig: Codable, Equatable {
     static let groupID = "group.com.MACHU.Launcher"
     private static let key = "config.v2"
 
-    /// 재서명 도구가 앱 그룹 이름을 바꿔도 찾을 수 있도록 후보를 모두 시도한다.
-    static func sharedDefaults() -> UserDefaults? {
+    /// 서명 프로필(embedded.mobileprovision)에 적힌 App Group 목록. 프로필이 없으면 nil.
+    static func profileGroups() -> [String]? {
+        guard let path = Bundle.main.path(forResource: "embedded", ofType: "mobileprovision"),
+              let data = FileManager.default.contents(atPath: path),
+              let start = data.range(of: Data("<?xml".utf8)),
+              let end = data.range(of: Data("</plist>".utf8)),
+              start.lowerBound < end.upperBound,
+              let plist = try? PropertyListSerialization.propertyList(
+                from: data.subdata(in: start.lowerBound..<end.upperBound), options: [], format: nil) as? [String: Any],
+              let ent = plist["Entitlements"] as? [String: Any]
+        else { return nil }
+        return (ent["com.apple.security.application-groups"] as? [String]) ?? []
+    }
+
+    /// 재서명 도구가 그룹 이름을 바꿔도 찾을 수 있도록, 앱이 서명된 프로필의 그룹과 기본 이름을 모두 시도한다.
+    /// 앱과 위젯이 같은 후보 순서를 쓰도록 정렬해 둔다.
+    private static func candidateGroups() -> [String] {
         var ids: [String] = []
         if let alt = Bundle.main.object(forInfoDictionaryKey: "ALTAppGroups") as? [String] { ids += alt }
+        if let groups = profileGroups() {
+            let usable = groups.filter { !$0.contains("*") }
+            // 우리 이름과 가까운 것을 먼저, 나머지는 이름순
+            ids += usable.filter { $0.localizedCaseInsensitiveContains("MACHU") || $0.localizedCaseInsensitiveContains("Launcher") }.sorted()
+            ids += usable.sorted()
+        }
         ids.append(groupID)
-        for id in ids {
+        var seen = Set<String>()
+        return ids.filter { seen.insert($0).inserted }
+    }
+
+    static func sharedDefaults() -> UserDefaults? {
+        for id in candidateGroups() {
             if FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id) != nil,
                let d = UserDefaults(suiteName: id) { return d }
         }
         return nil
+    }
+
+    /// 경고창에 보여줄 진단 문구
+    static func diagnostics() -> String {
+        guard let groups = profileGroups() else {
+            return "서명 프로필 정보를 읽지 못했습니다. (시뮬레이터이거나 프로필이 없는 설치본)"
+        }
+        if groups.isEmpty {
+            return "서명 프로필에 App Group 권한이 없습니다. 이 프로필로는 앱과 위젯이 설정을 나눠 쓸 수 없습니다."
+        }
+        return "서명 프로필의 App Group: " + groups.joined(separator: ", ") + "\n연결에 실패했다면 이 이름으로 앱·위젯이 같은 그룹을 쓰도록 서명되지 않은 것입니다."
     }
 
     static var isSharingAvailable: Bool { sharedDefaults() != nil }
