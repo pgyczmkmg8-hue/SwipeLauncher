@@ -7,13 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1FE932998538E9D69559D9A9 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B449ED826BA91AD6C1712B /* Config.swift */; };
 		366F3E4C79A2BCFD3B5BD578 /* LauncherWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0F6682C81D57A8B1AF2EE72 /* LauncherWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3BF715F5463D07D635F0EC79 /* SwipeLauncherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */; };
 		8F1F25C77B3DB5D43C32BFAC /* LauncherWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */; };
-		9D9513C40D4FFF1D09A8C2AB /* PadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A979052E497BC4A286E76F /* PadView.swift */; };
-		E3BB66DFF811E0479F54650B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B449ED826BA91AD6C1712B /* Config.swift */; };
-		EEDCEDE95B8C6ABD0DC5C1E5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2436F23C2B6852E5FF58A765 /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,27 +38,14 @@
 
 /* Begin PBXFileReference section */
 		0D458A28D50A57AEBC0D2884 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		2436F23C2B6852E5FF58A765 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		26A979052E497BC4A286E76F /* PadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PadView.swift; sourceTree = "<group>"; };
-		44F657B66D8D7DB37D657341 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
-		5806F5E2A5457BEEB3061D73 /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widget.entitlements; sourceTree = "<group>"; };
 		935671B16B720105F0217B38 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeLauncherApp.swift; sourceTree = "<group>"; };
 		B0F6682C81D57A8B1AF2EE72 /* LauncherWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LauncherWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECD361203F5A40E41075119E /* SwipeLauncher.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SwipeLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherWidget.swift; sourceTree = "<group>"; };
-		F9B449ED826BA91AD6C1712B /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		0D9C3341A2DF15E072779100 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				F9B449ED826BA91AD6C1712B /* Config.swift */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
 		74EFE7F24A416C5560404CC6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -77,7 +60,6 @@
 			children = (
 				935671B16B720105F0217B38 /* Info.plist */,
 				EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */,
-				5806F5E2A5457BEEB3061D73 /* Widget.entitlements */,
 			);
 			path = Widget;
 			sourceTree = "<group>";
@@ -86,7 +68,6 @@
 			isa = PBXGroup;
 			children = (
 				FFB124CE07788E03C17D875A /* App */,
-				0D9C3341A2DF15E072779100 /* Shared */,
 				AFD0D859766ED22FF57468D1 /* Widget */,
 				74EFE7F24A416C5560404CC6 /* Products */,
 			);
@@ -95,10 +76,7 @@
 		FFB124CE07788E03C17D875A /* App */ = {
 			isa = PBXGroup;
 			children = (
-				44F657B66D8D7DB37D657341 /* App.entitlements */,
 				0D458A28D50A57AEBC0D2884 /* Info.plist */,
-				26A979052E497BC4A286E76F /* PadView.swift */,
-				2436F23C2B6852E5FF58A765 /* SettingsView.swift */,
 				AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */,
 			);
 			path = App;
@@ -185,9 +163,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1FE932998538E9D69559D9A9 /* Config.swift in Sources */,
-				9D9513C40D4FFF1D09A8C2AB /* PadView.swift in Sources */,
-				EEDCEDE95B8C6ABD0DC5C1E5 /* SettingsView.swift in Sources */,
 				3BF715F5463D07D635F0EC79 /* SwipeLauncherApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -196,7 +171,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E3BB66DFF811E0479F54650B /* Config.swift in Sources */,
 				8F1F25C77B3DB5D43C32BFAC /* LauncherWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -216,7 +190,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -233,7 +206,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -249,7 +221,6 @@
 		C9DF1E3460507A8097344780 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Widget/Widget.entitlements;
 				INFOPLIST_FILE = Widget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -265,7 +236,6 @@
 		DE97793C3470FA260C9A654B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Widget/Widget.entitlements;
 				INFOPLIST_FILE = Widget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -1,63 +1,90 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
+enum GridSize: String, AppEnum {
+    case two, three
+    static var typeDisplayRepresentation: TypeDisplayRepresentation = "칸 개수"
+    static var caseDisplayRepresentations: [GridSize: DisplayRepresentation] = [
+        .two: "2 × 2",
+        .three: "3 × 3",
+    ]
+    var count: Int { self == .two ? 2 : 3 }
+}
+
+struct LauncherIntent: WidgetConfigurationIntent {
+    static var title: LocalizedStringResource = "칸 설정"
+    static var description = IntentDescription("칸마다 실행할 앱의 URL 스킴을 입력하세요. (예: maps://)")
+
+    @Parameter(title: "칸 개수", default: .two) var grid: GridSize
+    @Parameter(title: "1번 (왼쪽 위)", default: "maps://") var u1: String
+    @Parameter(title: "2번", default: "music://") var u2: String
+    @Parameter(title: "3번", default: "sms://") var u3: String
+    @Parameter(title: "4번", default: "message://") var u4: String
+    @Parameter(title: "5번 (3×3만)", default: "") var u5: String
+    @Parameter(title: "6번 (3×3만)", default: "") var u6: String
+    @Parameter(title: "7번 (3×3만)", default: "") var u7: String
+    @Parameter(title: "8번 (3×3만)", default: "") var u8: String
+    @Parameter(title: "9번 (3×3만)", default: "") var u9: String
+
+    var urls: [String] { [u1, u2, u3, u4, u5, u6, u7, u8, u9] }
+}
+
 struct Entry: TimelineEntry {
     let date: Date
-    let slots: [Direction: AppSlot]
+    let config: LauncherIntent
 }
 
-struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> Entry { Entry(date: .now, slots: Config.defaults) }
-    func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) {
-        completion(Entry(date: .now, slots: Config.load()))
+struct Provider: AppIntentTimelineProvider {
+    func placeholder(in context: Context) -> Entry { Entry(date: .now, config: LauncherIntent()) }
+    func snapshot(for configuration: LauncherIntent, in context: Context) async -> Entry {
+        Entry(date: .now, config: configuration)
     }
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        completion(Timeline(entries: [Entry(date: .now, slots: Config.load())], policy: .never))
+    func timeline(for configuration: LauncherIntent, in context: Context) async -> Timeline<Entry> {
+        Timeline(entries: [Entry(date: .now, config: configuration)], policy: .never)
     }
 }
 
-struct LauncherWidgetView: View {
-    let entry: Entry
+struct GridView: View {
+    let config: LauncherIntent
 
     var body: some View {
-        VStack {
-            label(.up)
-            Spacer()
-            HStack {
-                label(.left)
-                Spacer()
-                Image(systemName: "hand.draw")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                label(.right)
+        let n = config.grid.count
+        VStack(spacing: 0) {
+            ForEach(0..<n, id: \.self) { row in
+                HStack(spacing: 0) {
+                    ForEach(0..<n, id: \.self) { col in
+                        cell(row * n + col)
+                    }
+                }
             }
-            Spacer()
-            label(.down)
         }
-        .widgetURL(Config.padURL)
-        .containerBackground(for: .widget) {
-            Rectangle().fill(.ultraThinMaterial)
-        }
+        .containerBackground(for: .widget) { Color.clear }
     }
 
-    private func label(_ d: Direction) -> some View {
-        VStack(spacing: 2) {
-            Image(systemName: d.symbol).font(.caption.bold())
-            Text(entry.slots[d]?.name ?? "-").font(.caption2)
+    @ViewBuilder
+    private func cell(_ index: Int) -> some View {
+        let raw = config.urls[index].trimmingCharacters(in: .whitespaces)
+        let area = Color.black.opacity(0.001)
+            .contentShape(Rectangle())
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        if let url = URL(string: raw), !raw.isEmpty {
+            Link(destination: url) { area }
+        } else {
+            area
         }
-        .foregroundStyle(.primary)
     }
 }
 
 @main
 struct LauncherWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "LauncherWidget", provider: Provider()) { entry in
-            LauncherWidgetView(entry: entry)
+        AppIntentConfiguration(kind: "LauncherWidget", intent: LauncherIntent.self, provider: Provider()) { entry in
+            GridView(config: entry.config)
         }
-        .configurationDisplayName("SwipeLauncher")
-        .description("탭하면 제스처 패드가 열려요. 스와이프로 앱을 실행하세요.")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .configurationDisplayName("투명 런처")
+        .description("투명한 칸을 터치하면 지정한 앱이 열립니다. 위젯을 길게 눌러 '위젯 편집'에서 설정하세요.")
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .contentMarginsDisabled()
     }
 }

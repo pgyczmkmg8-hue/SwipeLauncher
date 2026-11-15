@@ -11,11 +11,7 @@ targets:
   SwipeLauncher:
     type: application
     platform: iOS
-    sources: [App, Shared]
-    entitlements:
-      path: App/App.entitlements
-      properties:
-        com.apple.security.application-groups: [group.com.MACHU.Launcher]
+    sources: [App]
     info:
       path: App/Info.plist
       properties:
@@ -32,11 +28,7 @@ targets:
   LauncherWidget:
     type: app-extension
     platform: iOS
-    sources: [Widget, Shared]
-    entitlements:
-      path: Widget/Widget.entitlements
-      properties:
-        com.apple.security.application-groups: [group.com.MACHU.Launcher]
+    sources: [Widget]
     info:
       path: Widget/Info.plist
       properties:
