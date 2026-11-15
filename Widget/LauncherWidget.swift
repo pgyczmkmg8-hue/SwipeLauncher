@@ -30,6 +30,23 @@ struct LauncherIntent: WidgetConfigurationIntent {
     var urls: [String] { [u1, u2, u3, u4, u5, u6, u7, u8, u9] }
 }
 
+/// 칸을 탭했을 때 지정한 주소를 연다. (시스템 OpenURLIntent 를 직접 버튼에 쓰면 메타데이터 오류가 난다)
+struct OpenLinkIntent: AppIntent {
+    static var title: LocalizedStringResource = "앱 열기"
+    static var openAppWhenRun: Bool = false
+    static var isDiscoverable: Bool = false
+
+    @Parameter(title: "주소") var url: String
+
+    init() { self.url = "" }
+    init(url: String) { self.url = url }
+
+    func perform() async throws -> some IntentResult & OpensIntent {
+        let target = URL(string: url) ?? URL(string: "swipelauncher://invalid")!
+        return .result(opensIntent: OpenURLIntent(target))
+    }
+}
+
 struct Entry: TimelineEntry {
     let date: Date
     let config: LauncherIntent
@@ -65,11 +82,12 @@ struct GridView: View {
     @ViewBuilder
     private func cell(_ index: Int) -> some View {
         let raw = config.urls[index].trimmingCharacters(in: .whitespaces)
-        let area = Color.black.opacity(0.001)
+        let area = Color.black.opacity(0.03)
             .contentShape(Rectangle())
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        if let url = URL(string: raw), !raw.isEmpty {
-            Link(destination: url) { area }
+        if URL(string: raw) != nil, !raw.isEmpty {
+            Button(intent: OpenLinkIntent(url: raw)) { area }
+                .buttonStyle(.plain)
         } else {
             area
         }
