@@ -78,35 +78,65 @@ struct ContentView: View {
                         Text("3 × 3").tag(3)
                     }
                     .pickerStyle(.segmented)
+                    numberGrid
                 } header: {
-                    Text("칸 개수")
+                    Text("칸 번호")
                 } footer: {
-                    Text("위젯을 길게 눌러 편집할 필요 없이 여기서 정하면 위젯에 바로 반영됩니다.")
+                    Text("위젯의 칸에는 왼쪽 위부터 가로로 이어서 번호가 붙습니다. 위젯은 투명해서 번호가 보이지 않으니 위 그림을 기준으로 누르세요.")
                 }
 
                 Section {
-                    ForEach(0..<(config.grid * config.grid), id: \.self) { i in
-                        HStack {
-                            Text("\(i + 1)")
-                                .font(.headline)
-                                .frame(width: 24)
-                            TextField("URL 스킴 (예: maps://)", text: urlBinding(i))
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .keyboardType(.URL)
-                            Button("테스트") { open(config.urls[i]) }
-                                .buttonStyle(.borderless)
+                    ForEach($config.combos) { $combo in
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Text("순서").font(.footnote).foregroundStyle(.secondary).frame(width: 36, alignment: .leading)
+                                TextField("예: 1123", text: $combo.seq)
+                                    .keyboardType(.numberPad)
+                                    .font(.title3.monospacedDigit())
+                                    .onChange(of: combo.seq) { _, v in
+                                        let f = String(v.filter { "123456789".contains($0) })
+                                        if f != v { combo.seq = f }
+                                    }
+                            }
+                            HStack {
+                                Text("앱").font(.footnote).foregroundStyle(.secondary).frame(width: 36, alignment: .leading)
+                                TextField("URL 스킴 (예: music://)", text: $combo.url)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .keyboardType(.URL)
+                                Button("테스트") { open(combo.url) }
+                                    .buttonStyle(.borderless)
+                            }
+                            if let w = warning(for: combo) {
+                                Text(w).font(.caption).foregroundStyle(.orange)
+                            }
                         }
+                        .padding(.vertical, 2)
+                    }
+                    .onDelete { config.combos.remove(atOffsets: $0) }
+
+                    Button {
+                        config.combos.append(Combo(seq: "", url: ""))
+                    } label: {
+                        Label("조합 추가", systemImage: "plus.circle")
                     }
                     if !testResult.isEmpty { Text(testResult).font(.footnote).foregroundStyle(.secondary) }
                 } header: {
-                    Text("칸별 앱 (왼쪽 위가 1번, 가로로 이어서)")
+                    Text("조합 → 앱")
                 } footer: {
-                    Text("비워 두면 그 칸은 눌러도 아무 일도 없습니다.")
+                    Text("칸 번호를 이 순서대로 누르면 앱이 열립니다. 한 자리(예: 3)로 정하면 그 칸만 눌러도 열립니다. 다른 조합의 앞부분과 같으면 짧은 조합이 먼저 실행됩니다. 목록을 왼쪽으로 밀면 삭제됩니다.")
+                }
+
+                Section {
+                    Stepper(value: $config.timeout, in: 1...15, step: 1) {
+                        Text("입력 제한시간  \(Int(config.timeout))초")
+                    }
+                } footer: {
+                    Text("마지막으로 누른 뒤 이 시간이 지나면 입력이 처음부터 다시 시작됩니다. 중간에 조합과 맞지 않는 칸을 눌러도 그 칸부터 다시 시작합니다.")
                 }
 
                 Section("사용법") {
-                    Text("1. 앱을 설치한 뒤 아이폰을 한 번 재시작합니다. (투명 설정을 시스템이 처음 읽도록)\n2. 홈 화면을 길게 눌러 위젯 추가 → '투명 런처'\n3. 이 화면에서 칸 개수와 칸별 앱을 정합니다.\n4. 투명한 칸을 터치하면 해당 앱이 열립니다.")
+                    Text("1. 앱을 설치한 뒤 아이폰을 한 번 재시작합니다. (투명 설정을 시스템이 처음 읽도록)\n2. 홈 화면을 길게 눌러 위젯 추가 → '투명 런처'\n3. 이 화면에서 칸 개수와 '조합 → 앱'을 정합니다.\n4. 투명한 칸을 정해 둔 순서대로 누르면 해당 앱이 열립니다.")
                         .font(.callout)
                 }
 
@@ -132,14 +162,34 @@ struct ContentView: View {
         }
     }
 
-    private func urlBinding(_ i: Int) -> Binding<String> {
-        Binding(
-            get: { i < config.urls.count ? config.urls[i] : "" },
-            set: { v in
-                while config.urls.count < 9 { config.urls.append("") }
-                config.urls[i] = v
+    private var numberGrid: some View {
+        let n = config.grid
+        return VStack(spacing: 6) {
+            ForEach(0..<n, id: \.self) { r in
+                HStack(spacing: 6) {
+                    ForEach(0..<n, id: \.self) { c in
+                        Text("\(r * n + c + 1)")
+                            .font(.title2.weight(.semibold).monospacedDigit())
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+                    }
+                }
             }
-        )
+        }
+        .frame(maxWidth: 220)
+        .frame(maxWidth: .infinity)
+    }
+
+    private func warning(for combo: Combo) -> String? {
+        let d = ComboLogic.digits(combo.seq)
+        if d.isEmpty { return combo.seq.isEmpty ? nil : "1~9 사이 숫자만 쓸 수 있습니다." }
+        if d.contains(where: { $0 > config.grid * config.grid }) { return "현재 \(config.grid)×\(config.grid) 구성에 없는 칸 번호가 있습니다." }
+        let others = config.combos.filter { $0.id != combo.id }.map { ComboLogic.digits($0.seq) }
+        if others.contains(d) { return "같은 순서의 조합이 이미 있습니다." }
+        if others.contains(where: { $0.count < d.count && Array(d.prefix($0.count)) == $0 }) {
+            return "더 짧은 조합과 앞부분이 같아서 이 조합은 실행되지 않습니다."
+        }
+        return nil
     }
 
     private func open(_ raw: String) {

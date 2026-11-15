@@ -9,9 +9,11 @@
 /* Begin PBXBuildFile section */
 		036A6EB243B1FDF903D46536 /* OpenLinkIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E92022A80E85CEC80E086EA /* OpenLinkIntent.swift */; };
 		1FE932998538E9D69559D9A9 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B449ED826BA91AD6C1712B /* Config.swift */; };
+		2EC0D09A49CEB749AA799C40 /* ComboLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 673CEAF226476D0803014974 /* ComboLogic.swift */; };
 		366F3E4C79A2BCFD3B5BD578 /* LauncherWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0F6682C81D57A8B1AF2EE72 /* LauncherWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3BF715F5463D07D635F0EC79 /* SwipeLauncherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */; };
 		4513FF95D32F9B8FFB38554B /* TransparentHook.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EE08C4231190369AEC647 /* TransparentHook.m */; };
+		7D3335941D0C50D1BE7A2831 /* ComboLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 673CEAF226476D0803014974 /* ComboLogic.swift */; };
 		8F1F25C77B3DB5D43C32BFAC /* LauncherWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */; };
 		C8BBF8226F68F2020895DC4C /* OpenLinkIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E92022A80E85CEC80E086EA /* OpenLinkIntent.swift */; };
 		E3BB66DFF811E0479F54650B /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B449ED826BA91AD6C1712B /* Config.swift */; };
@@ -49,6 +51,7 @@
 		1E92022A80E85CEC80E086EA /* OpenLinkIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLinkIntent.swift; sourceTree = "<group>"; };
 		44F657B66D8D7DB37D657341 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		5806F5E2A5457BEEB3061D73 /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widget.entitlements; sourceTree = "<group>"; };
+		673CEAF226476D0803014974 /* ComboLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComboLogic.swift; sourceTree = "<group>"; };
 		935671B16B720105F0217B38 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeLauncherApp.swift; sourceTree = "<group>"; };
 		B0F6682C81D57A8B1AF2EE72 /* LauncherWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LauncherWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -61,6 +64,7 @@
 		0D9C3341A2DF15E072779100 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				673CEAF226476D0803014974 /* ComboLogic.swift */,
 				F9B449ED826BA91AD6C1712B /* Config.swift */,
 				1E92022A80E85CEC80E086EA /* OpenLinkIntent.swift */,
 			);
@@ -201,6 +205,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7D3335941D0C50D1BE7A2831 /* ComboLogic.swift in Sources */,
 				1FE932998538E9D69559D9A9 /* Config.swift in Sources */,
 				C8BBF8226F68F2020895DC4C /* OpenLinkIntent.swift in Sources */,
 				3BF715F5463D07D635F0EC79 /* SwipeLauncherApp.swift in Sources */,
@@ -211,6 +216,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2EC0D09A49CEB749AA799C40 /* ComboLogic.swift in Sources */,
 				E3BB66DFF811E0479F54650B /* Config.swift in Sources */,
 				8F1F25C77B3DB5D43C32BFAC /* LauncherWidget.swift in Sources */,
 				036A6EB243B1FDF903D46536 /* OpenLinkIntent.swift in Sources */,
@@ -329,7 +335,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -349,7 +355,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.8.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -395,7 +401,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -409,7 +415,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.7.0;
+				MARKETING_VERSION = 1.8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
