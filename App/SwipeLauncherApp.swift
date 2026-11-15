@@ -54,8 +54,9 @@ enum UpdateChecker {
 }
 
 struct ContentView: View {
-    @State private var test = ""
-    @State private var result = ""
+    @State private var config = LauncherConfig.load()
+    @State private var sharing = LauncherConfig.isSharingAvailable
+    @State private var testResult = ""
     @State private var updateStatus = ""
     @State private var latestTag: String?
     @State private var checking = false
@@ -63,28 +64,52 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("사용법") {
-                    Text("1. 앱을 설치한 뒤 아이폰을 한 번 재시작합니다. (투명 설정을 시스템이 처음 읽도록)\n2. 홈 화면을 길게 눌러 위젯 추가 → '투명 런처'\n3. 위젯을 길게 눌러 '위젯 편집'에서 칸 개수(2×2 / 3×3)와 칸별 URL 스킴 입력\n4. 투명한 칸을 터치하면 앱이 열립니다")
-                        .font(.callout)
+                if !sharing {
+                    Section {
+                        Text("이 설치본은 앱과 위젯 사이 저장소(App Group)를 쓸 수 없어서, 여기서 정한 설정이 위젯에 전달되지 않습니다. 재서명 도구에서 App Group 권한을 유지하도록 설치해 보세요.")
+                            .font(.callout)
+                            .foregroundStyle(.red)
+                    }
                 }
+
                 Section {
-                    TextField("URL 스킴 (예: maps://)", text: $test)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .keyboardType(.URL)
-                    Button("열어서 테스트") {
-                        guard let url = URL(string: test.trimmingCharacters(in: .whitespaces)) else {
-                            result = "올바르지 않은 URL"
-                            return
-                        }
-                        UIApplication.shared.open(url) { ok in
-                            result = ok ? "열림" : "열 수 없음 (스킴 확인)"
+                    Picker("칸 구성", selection: $config.grid) {
+                        Text("2 × 2").tag(2)
+                        Text("3 × 3").tag(3)
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("칸 개수")
+                } footer: {
+                    Text("위젯을 길게 눌러 편집할 필요 없이 여기서 정하면 위젯에 바로 반영됩니다.")
+                }
+
+                Section {
+                    ForEach(0..<(config.grid * config.grid), id: \.self) { i in
+                        HStack {
+                            Text("\(i + 1)")
+                                .font(.headline)
+                                .frame(width: 24)
+                            TextField("URL 스킴 (예: maps://)", text: urlBinding(i))
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                                .keyboardType(.URL)
+                            Button("테스트") { open(config.urls[i]) }
+                                .buttonStyle(.borderless)
                         }
                     }
-                    if !result.isEmpty { Text(result).foregroundStyle(.secondary) }
+                    if !testResult.isEmpty { Text(testResult).font(.footnote).foregroundStyle(.secondary) }
                 } header: {
-                    Text("스킴 테스트")
+                    Text("칸별 앱 (왼쪽 위가 1번, 가로로 이어서)")
+                } footer: {
+                    Text("비워 두면 그 칸은 눌러도 아무 일도 없습니다.")
                 }
+
+                Section("사용법") {
+                    Text("1. 앱을 설치한 뒤 아이폰을 한 번 재시작합니다. (투명 설정을 시스템이 처음 읽도록)\n2. 홈 화면을 길게 눌러 위젯 추가 → '투명 런처'\n3. 이 화면에서 칸 개수와 칸별 앱을 정합니다.\n4. 투명한 칸을 터치하면 해당 앱이 열립니다.")
+                        .font(.callout)
+                }
+
                 Section {
                     LabeledContent("현재 버전", value: UpdateChecker.currentVersion)
                     Button(checking ? "확인 중…" : "업데이트 확인") { Task { await check() } }
@@ -100,6 +125,30 @@ struct ContentView: View {
             }
             .navigationTitle("투명 런처")
             .task { await check() }
+            .onChange(of: config) { _, new in
+                sharing = LauncherConfig.isSharingAvailable
+                new.save()
+            }
+        }
+    }
+
+    private func urlBinding(_ i: Int) -> Binding<String> {
+        Binding(
+            get: { i < config.urls.count ? config.urls[i] : "" },
+            set: { v in
+                while config.urls.count < 9 { config.urls.append("") }
+                config.urls[i] = v
+            }
+        )
+    }
+
+    private func open(_ raw: String) {
+        guard let url = URL(string: raw.trimmingCharacters(in: .whitespaces)), !raw.isEmpty else {
+            testResult = "비어 있거나 올바르지 않은 URL"
+            return
+        }
+        UIApplication.shared.open(url) { ok in
+            testResult = ok ? "열림" : "열 수 없음 (스킴 확인)"
         }
     }
 
