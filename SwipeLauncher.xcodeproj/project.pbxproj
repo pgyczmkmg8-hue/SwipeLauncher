@@ -7,13 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		30A65D4818BC110C8CADB229 /* SlotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3CABEDDB68577BF59A5481 /* SlotStore.swift */; };
 		366F3E4C79A2BCFD3B5BD578 /* LauncherWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0F6682C81D57A8B1AF2EE72 /* LauncherWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3BF715F5463D07D635F0EC79 /* SwipeLauncherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */; };
-		8B61AF33F6CE2AB6F0CD33EE /* SlotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3CABEDDB68577BF59A5481 /* SlotStore.swift */; };
+		4513FF95D32F9B8FFB38554B /* TransparentHook.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EE08C4231190369AEC647 /* TransparentHook.m */; };
 		8F1F25C77B3DB5D43C32BFAC /* LauncherWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */; };
-		AB3EE8E1C86337D80DAB9E02 /* TransparentSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C85AA81E28B71ADA152B9F /* TransparentSetupView.swift */; };
-		C24A9E3F0A531E55F95A0958 /* Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E997F6602BD4A973FF97627 /* Calibration.swift */; };
 		F32D76394DAB617C20F2931F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 172F17BEA3AE7E2A0B1A942E /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -43,28 +40,16 @@
 
 /* Begin PBXFileReference section */
 		0D458A28D50A57AEBC0D2884 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0E6EE08C4231190369AEC647 /* TransparentHook.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TransparentHook.m; sourceTree = "<group>"; };
 		172F17BEA3AE7E2A0B1A942E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2C3CABEDDB68577BF59A5481 /* SlotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotStore.swift; sourceTree = "<group>"; };
-		3E997F6602BD4A973FF97627 /* Calibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Calibration.swift; sourceTree = "<group>"; };
-		44F657B66D8D7DB37D657341 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
-		5806F5E2A5457BEEB3061D73 /* Widget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widget.entitlements; sourceTree = "<group>"; };
 		935671B16B720105F0217B38 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeLauncherApp.swift; sourceTree = "<group>"; };
 		B0F6682C81D57A8B1AF2EE72 /* LauncherWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = LauncherWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		C8C85AA81E28B71ADA152B9F /* TransparentSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransparentSetupView.swift; sourceTree = "<group>"; };
 		ECD361203F5A40E41075119E /* SwipeLauncher.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SwipeLauncher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherWidget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
-		0D9C3341A2DF15E072779100 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				2C3CABEDDB68577BF59A5481 /* SlotStore.swift */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
 		74EFE7F24A416C5560404CC6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -79,7 +64,7 @@
 			children = (
 				935671B16B720105F0217B38 /* Info.plist */,
 				EE1AEA9FB9A235FA1ED3D618 /* LauncherWidget.swift */,
-				5806F5E2A5457BEEB3061D73 /* Widget.entitlements */,
+				0E6EE08C4231190369AEC647 /* TransparentHook.m */,
 			);
 			path = Widget;
 			sourceTree = "<group>";
@@ -88,7 +73,6 @@
 			isa = PBXGroup;
 			children = (
 				FFB124CE07788E03C17D875A /* App */,
-				0D9C3341A2DF15E072779100 /* Shared */,
 				AFD0D859766ED22FF57468D1 /* Widget */,
 				74EFE7F24A416C5560404CC6 /* Products */,
 			);
@@ -97,12 +81,9 @@
 		FFB124CE07788E03C17D875A /* App */ = {
 			isa = PBXGroup;
 			children = (
-				44F657B66D8D7DB37D657341 /* App.entitlements */,
 				172F17BEA3AE7E2A0B1A942E /* Assets.xcassets */,
-				3E997F6602BD4A973FF97627 /* Calibration.swift */,
 				0D458A28D50A57AEBC0D2884 /* Info.plist */,
 				AE63B1E57BCA429B341C2061 /* SwipeLauncherApp.swift */,
-				C8C85AA81E28B71ADA152B9F /* TransparentSetupView.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -200,10 +181,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C24A9E3F0A531E55F95A0958 /* Calibration.swift in Sources */,
-				30A65D4818BC110C8CADB229 /* SlotStore.swift in Sources */,
 				3BF715F5463D07D635F0EC79 /* SwipeLauncherApp.swift in Sources */,
-				AB3EE8E1C86337D80DAB9E02 /* TransparentSetupView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -212,7 +190,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8F1F25C77B3DB5D43C32BFAC /* LauncherWidget.swift in Sources */,
-				8B61AF33F6CE2AB6F0CD33EE /* SlotStore.swift in Sources */,
+				4513FF95D32F9B8FFB38554B /* TransparentHook.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -231,7 +209,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -248,7 +225,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -264,7 +240,6 @@
 		C9DF1E3460507A8097344780 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Widget/Widget.entitlements;
 				INFOPLIST_FILE = Widget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -280,7 +255,6 @@
 		DE97793C3470FA260C9A654B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Widget/Widget.entitlements;
 				INFOPLIST_FILE = Widget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -327,7 +301,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -346,8 +320,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.5.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -393,7 +367,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -406,8 +380,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 1.4.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.5.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

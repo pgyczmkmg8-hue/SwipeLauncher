@@ -55,13 +55,8 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    NavigationLink("투명 배경 만들기") { TransparentSetupView() }
-                } footer: {
-                    Text("스크린샷으로 월페이퍼를 위젯 위치에 맞춰 잘라, 위젯이 투명해 보이게 합니다.")
-                }
                 Section("사용법") {
-                    Text("1. 홈 화면을 길게 눌러 위젯 추가 → '투명 런처'\n2. 위젯을 길게 눌러 '위젯 편집'\n3. 칸 개수(2×2 / 3×3)와 칸별 URL 스킴 입력\n4. 투명한 칸을 터치하면 앱이 열립니다")
+                    Text("1. 앱을 설치한 뒤 아이폰을 한 번 재시작합니다. (투명 설정을 시스템이 처음 읽도록)\n2. 홈 화면을 길게 눌러 위젯 추가 → '투명 런처'\n3. 위젯을 길게 눌러 '위젯 편집'에서 칸 개수(2×2 / 3×3)와 칸별 URL 스킴 입력\n4. 투명한 칸을 터치하면 앱이 열립니다")
                         .font(.callout)
                 }
                 Section {
