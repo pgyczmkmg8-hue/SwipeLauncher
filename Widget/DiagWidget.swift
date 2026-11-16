@@ -35,10 +35,10 @@ struct DiagView: View {
             if variant == 1 {
                 button("A 진하게", TapIntent(cell: 1), fill: Color.blue.opacity(1))
                 button("B 거의 투명", TapIntent(cell: 2), fill: Color.blue.opacity(0.004))
-                button("D 매개변수 포함", TapIntent(cell: 4, combosText: "11 maps://", timeout: 4), fill: Color.blue.opacity(0.3))
+                button("D 매개변수 포함", TapIntent(cell: 4), fill: Color.blue.opacity(0.3))
             } else {
                 button("E 투명처리 · 기본", TapIntent(cell: 5), fill: Color.blue.opacity(1))
-                button("F 투명처리 · 매개변수", TapIntent(cell: 6, combosText: "11 maps://", timeout: 4), fill: Color.blue.opacity(0.3))
+                button("F 투명처리 · 매개변수", TapIntent(cell: 6), fill: Color.blue.opacity(0.3))
             }
         }
         .padding(6)

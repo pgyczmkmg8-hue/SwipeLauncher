@@ -9,7 +9,6 @@ struct Entry: TimelineEntry {
     var readyURL: String? = nil   // 놓친 마지막 입력으로 이미 완성된 조합(마지막으로 누른 칸을 다시 누르면 연다)
     var readyCell: Int? = nil
     let direct: Bool = false
-    let combosText: String = ""
     var flash: Int? = nil   // 방금 누른 칸 (잠깐 살짝 불투명하게 표시)
 }
 
@@ -98,8 +97,7 @@ struct GridView: View {
         } else {
             // 진행 중이거나 조합과 무관한 칸도 반드시 버튼으로 받는다.
             // (일반 영역으로 두면 시스템 기본 동작인 '위젯 앱 열기'가 실행된다)
-            Button(intent: TapIntent(cell: number, combosText: entry.direct ? entry.combosText : "",
-                                     timeout: Int(entry.config.timeout))) { area }.buttonStyle(.plain)
+            Button(intent: TapIntent(cell: number)) { area }.buttonStyle(.plain)
         }
     }
 }

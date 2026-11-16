@@ -157,6 +157,20 @@ struct LauncherConfig: Codable, Equatable {
         return lines.joined(separator: "\n")
     }
 
+    /// 칸을 누를 때 진동(햅틱)으로 바로 알려 줄지. 입력 처리 중에 빠르게 확인해야 해서 설정 파일 대신 표식 파일의 유무로 둔다.
+    static var hapticEnabled: Bool {
+        get {
+            guard let dir = sharedContainerURL() else { return true }
+            return access(dir.appendingPathComponent("haptic.off").path, F_OK) != 0
+        }
+        set {
+            guard let dir = sharedContainerURL() else { return }
+            let url = dir.appendingPathComponent("haptic.off")
+            if newValue { try? FileManager.default.removeItem(at: url) }
+            else { FileManager.default.createFile(atPath: url.path, contents: Data()) }
+        }
+    }
+
     static var isSharingAvailable: Bool { sharedContainerURL() != nil }
 
     private static func configFileURL() -> URL? {

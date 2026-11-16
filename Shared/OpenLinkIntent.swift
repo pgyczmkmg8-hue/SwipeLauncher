@@ -1,4 +1,5 @@
 import AppIntents
+import AudioToolbox
 import Foundation
 
 /// 조합이 완성되는 칸에서 쓰는 버튼: 상태를 비우고 지정한 주소를 바로 연다. (우리 앱을 거치지 않음)
@@ -29,23 +30,20 @@ struct TapIntent: AppIntent {
     static var isDiscoverable: Bool = false
 
     @Parameter(title: "칸 번호") var cell: Int
-    /// App Group 을 못 쓰는 설치본에서 위젯이 직접 넘겨주는 조합(문자열)과 제한시간
-    @Parameter(title: "조합") var combosText: String
-    @Parameter(title: "제한시간") var timeout: Int
 
-    init() { self.cell = 0; self.combosText = ""; self.timeout = 4 }
-    init(cell: Int, combosText: String = "", timeout: Int = 4) {
-        self.cell = cell; self.combosText = combosText; self.timeout = timeout
-    }
+    init() { self.cell = 0 }
+    init(cell: Int) { self.cell = cell }
 
     func perform() async throws -> some IntentResult {
         // 평소에는 누른 칸 번호를 기록 파일 끝에 덧붙이기만 한다. (판정은 위젯이 다시 그려질 때 한다)
-        if TapLog.append(cell: cell) { return .result() }
+        if TapLog.append(cell: cell) {
+            // 화면이 다시 그려지기 전에 먼저 손끝에 알려 준다.
+            if LauncherConfig.hapticEnabled { AudioServicesPlaySystemSound(1519) }
+            return .result()
+        }
 
-        // 공유 폴더를 못 쓰는 설치본: 예전 방식(위젯이 넘겨준 조합으로 직접 판정)
-        var cfg = LauncherConfig()
-        cfg.combos = LauncherConfig.parseCombos(combosText)
-        cfg.timeout = Double(min(max(timeout, 1), 15))
+        // 공유 폴더를 못 쓰는 설치본: 예전 방식
+        let cfg = LauncherConfig.load()
         let tapped = cell
         TapState.exclusive {
             let state = TapState.legacyCurrent(timeout: cfg.timeout)

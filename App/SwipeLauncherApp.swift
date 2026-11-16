@@ -114,6 +114,7 @@ struct ContentView: View {
     @State private var updateStatus = ""
     @State private var latestTag: String?
     @State private var checking = false
+    @State private var haptic = LauncherConfig.hapticEnabled
 
     var body: some View {
         NavigationStack {
@@ -205,6 +206,15 @@ struct ContentView: View {
                     }
                 } footer: {
                     Text("마지막으로 누른 뒤 이 시간이 지나면 입력이 처음부터 다시 시작됩니다. 중간에 조합과 맞지 않는 칸을 눌러도 그 칸부터 다시 시작합니다.")
+                }
+
+                Section {
+                    Toggle("탭할 때 진동", isOn: $haptic)
+                        .onChange(of: haptic) { _, on in LauncherConfig.hapticEnabled = on }
+                } header: {
+                    Text("반응")
+                } footer: {
+                    Text("칸을 누르는 순간 진동으로 먼저 알려 줍니다. 화면 표시는 시스템이 위젯을 다시 그린 뒤에 나타나서 조금 늦을 수 있습니다. 기기의 '시스템 햅틱' 설정이 꺼져 있으면 진동하지 않습니다.")
                 }
 
                 Section {
