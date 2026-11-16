@@ -9,7 +9,10 @@ struct SwipeLauncherApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .task { WidgetCenter.shared.reloadAllTimelines() }
+                .task {
+                    TapLog.trimIfNeeded()
+                    WidgetCenter.shared.reloadAllTimelines()
+                }
                 .onOpenURL { url in
                     // 위젯 칸 탭(조합 완성): swipelauncher://open?u=<대상 주소> → 대상 앱 실행
                     guard url.scheme == "swipelauncher", url.host == "open",
@@ -17,7 +20,7 @@ struct SwipeLauncherApp: App {
                             .queryItems?.first(where: { $0.name == "u" })?.value,
                           let target = URL(string: u) else { return }
                     RelayOpener.shared.open(target)
-                    TapState(seq: [], at: .now).save()    // 입력 상태 정리는 열기 요청 뒤에
+                    TapState.reset()    // 입력 상태 정리는 열기 요청 뒤에
                 }
                 .onChange(of: scenePhase) { _, phase in
                     // 앱이 막 켜지는 중이라 열기가 무시됐다면, 활성화된 뒤 다시 시도한다

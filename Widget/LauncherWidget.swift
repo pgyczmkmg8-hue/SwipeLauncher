@@ -19,12 +19,13 @@ struct Provider: TimelineProvider {
     /// 마지막 입력이 이 시간 안이면 표시 대상으로 본다. (폰에서는 입력 처리 뒤 화면이 늦게 그려질 수 있다)
     static let flashWindow: TimeInterval = 3.0
 
-    private func make(at now: Date = .now) -> (Entry, LauncherConfig) {
+    /// 설정과 입력 상태는 한 번씩만 읽는다.
+    private func make(at now: Date = .now) -> (Entry, LauncherConfig, TapState) {
         let cfg = LauncherConfig.load()
-        let st = TapState.current(timeout: cfg.timeout)
+        let st = TapState.current(config: cfg, now: now)
         let fresh = now.timeIntervalSince(st.at) < Self.flashWindow
         return (Entry(date: now, config: cfg, seq: st.seq, readyURL: st.readyURL, readyCell: st.lastCell,
-                      flash: fresh ? st.lastCell : nil), cfg)
+                      flash: fresh ? st.lastCell : nil), cfg, st)
     }
 
     func placeholder(in context: Context) -> Entry { make().0 }
@@ -35,8 +36,7 @@ struct Provider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
         let now = Date()
-        let (e, cfg) = make(at: now)
-        let st = TapState.current(timeout: cfg.timeout)
+        let (e, cfg, st) = make(at: now)
         var entries = [e]
         // 표시는 이 화면이 그려진 시점부터 잠깐만 보여 주고 거둔다.
         if e.flash != nil {

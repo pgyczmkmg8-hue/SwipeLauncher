@@ -79,41 +79,40 @@ struct LauncherConfig: Codable, Equatable {
     private static let lock = NSLock()
     private static var cachedDefaults: UserDefaults?
     private static var cachedContainer: URL?
-
-    /// 앱 그룹 공유 폴더. 입력 상태처럼 즉시 서로 보여야 하는 값은 설정(UserDefaults)이 아니라 이 폴더의 파일에 둔다.
-    static func sharedContainerURL() -> URL? {
-        _ = sharedDefaults()   // 그룹 이름을 먼저 확정한다
-        lock.lock(); defer { lock.unlock() }
-        return cachedContainer
-    }
+    private static var cachedID: String?
     private static let savedKey = "resolvedGroup.v1"
 
+    /// 앱 그룹 공유 폴더. 입력 기록과 설정처럼 즉시 서로 보여야 하는 값은 UserDefaults 가 아니라 이 폴더의 파일에 둔다.
     /// 한 번 찾은 그룹은 프로세스 안에서 기억하고, 다음 실행에서도 바로 쓰도록 이름을 저장해 둔다.
     /// (서명 권한 탐색과 컨테이너 확인은 비싸서 탭마다 반복하면 위젯 입력이 느려진다)
-    static func sharedDefaults() -> UserDefaults? {
+    static func sharedContainerURL() -> URL? {
         lock.lock(); defer { lock.unlock() }
-        if let d = cachedDefaults { return d }
+        if let u = cachedContainer { return u }
 
-        func open(_ id: String) -> UserDefaults? {
-            guard let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id),
-                  let d = UserDefaults(suiteName: id) else { return nil }
+        func probe(_ id: String) -> Bool {
+            guard let url = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: id) else { return false }
             cachedContainer = url
-            return d
+            cachedID = id
+            return true
         }
         // 1) 지난번에 성공한 이름
-        if let saved = UserDefaults.standard.string(forKey: savedKey), let d = open(saved) {
-            cachedDefaults = d
-            return d
-        }
+        if let saved = UserDefaults.standard.string(forKey: savedKey), probe(saved) { return cachedContainer }
         // 2) 후보 전체 탐색 (처음 한 번만)
-        for id in candidateGroups() {
-            if let d = open(id) {
-                cachedDefaults = d
-                UserDefaults.standard.set(id, forKey: savedKey)
-                return d
-            }
+        for id in candidateGroups() where probe(id) {
+            UserDefaults.standard.set(id, forKey: savedKey)
+            return cachedContainer
         }
         return nil
+    }
+
+    /// 예전 버전이 저장한 설정을 읽어 오는 용도로만 쓴다.
+    static func sharedDefaults() -> UserDefaults? {
+        guard sharedContainerURL() != nil else { return nil }
+        lock.lock(); defer { lock.unlock() }
+        if let d = cachedDefaults { return d }
+        guard let id = cachedID, let d = UserDefaults(suiteName: id) else { return nil }
+        cachedDefaults = d
+        return d
     }
 
     /// 앱 실행파일의 코드 서명에 들어 있는 권한(entitlements) 중 App Group 목록.
@@ -158,11 +157,19 @@ struct LauncherConfig: Codable, Equatable {
         return lines.joined(separator: "\n")
     }
 
-    static var isSharingAvailable: Bool { sharedDefaults() != nil }
+    static var isSharingAvailable: Bool { sharedContainerURL() != nil }
 
+    private static func configFileURL() -> URL? {
+        sharedContainerURL()?.appendingPathComponent("config.json")
+    }
+
+    /// 설정은 공유 폴더의 작은 파일에서 읽는다. (UserDefaults 는 새 프로세스에서 처음 읽을 때 시스템 호출이 오가서 느리다)
+    /// 파일이 없으면 예전 버전이 UserDefaults 에 저장한 값을 읽는다.
     static func load() -> LauncherConfig {
-        guard let d = sharedDefaults(), let data = d.data(forKey: key),
-              var c = try? JSONDecoder().decode(LauncherConfig.self, from: data) else { return LauncherConfig() }
+        var data: Data?
+        if let url = configFileURL() { data = try? Data(contentsOf: url) }
+        if data == nil { data = sharedDefaults()?.data(forKey: key) }
+        guard let data, var c = try? JSONDecoder().decode(LauncherConfig.self, from: data) else { return LauncherConfig() }
         c.grid = [2, 3, 4].contains(c.grid) ? c.grid : 2
         c.timeout = min(max(c.timeout, 1), 15)
         return c
@@ -170,8 +177,9 @@ struct LauncherConfig: Codable, Equatable {
 
     @discardableResult
     func save() -> Bool {
-        guard let d = Self.sharedDefaults(), let data = try? JSONEncoder().encode(self) else { return false }
-        d.set(data, forKey: Self.key)
+        guard let data = try? JSONEncoder().encode(self), Self.isSharingAvailable else { return false }
+        if let url = Self.configFileURL() { try? data.write(to: url, options: [.atomic]) }
+        Self.sharedDefaults()?.set(data, forKey: Self.key)   // 예전 버전과의 호환
         WidgetCenter.shared.reloadAllTimelines()
         return true
     }
@@ -205,7 +213,26 @@ struct TapState: Codable {
         return body()
     }
 
+    // MARK: 입력 상태 (공유 폴더를 쓸 수 있으면 입력 기록(TapLog)을 되감아 계산하고, 못 쓰면 예전 방식)
+
+    /// 지금의 입력 상태. 설정(조합, 제한시간)은 한 번 읽은 것을 넘겨 받아 중복 읽기를 피한다.
+    static func current(config: LauncherConfig, now: Date = .now) -> TapState {
+        if LauncherConfig.sharedContainerURL() != nil { return TapLog.state(config: config, now: now) }
+        return legacyCurrent(timeout: config.timeout, now: now)
+    }
+
     static func load() -> TapState {
+        current(config: LauncherConfig.load())
+    }
+
+    /// 입력을 비운다. (조합이 완성되어 앱을 열 때)
+    static func reset() {
+        if LauncherConfig.sharedContainerURL() != nil { TapLog.markReset() } else { TapState().save() }
+    }
+
+    // MARK: 예전 방식 (App Group 을 못 쓰는 설치본)
+
+    static func legacyLoad() -> TapState {
         if let url = fileURL() {
             guard let data = try? Data(contentsOf: url),
                   let s = try? JSONDecoder().decode(TapState.self, from: data) else { return TapState() }
@@ -217,8 +244,8 @@ struct TapState: Codable {
     }
 
     /// 제한시간이 지났으면 빈 상태로 본다.
-    static func current(timeout: Double, now: Date = .now) -> TapState {
-        let s = load()
+    static func legacyCurrent(timeout: Double, now: Date = .now) -> TapState {
+        let s = legacyLoad()
         return now.timeIntervalSince(s.at) <= timeout ? s : TapState()
     }
 

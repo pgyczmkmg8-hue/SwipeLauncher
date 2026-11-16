@@ -14,7 +14,7 @@ struct OpenLinkIntent: AppIntent {
     init(url: String) { self.url = url }
 
     func perform() async throws -> some IntentResult & OpensIntent {
-        TapState(seq: [], at: .now).save()
+        TapState.reset()
         let target = URL(string: url) ?? URL(string: "about:blank")!
         return .result(opensIntent: OpenURLIntent(target))
     }
@@ -39,17 +39,18 @@ struct TapIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        var cfg = LauncherConfig.load()
-        if !LauncherConfig.isSharingAvailable {
-            cfg.combos = LauncherConfig.parseCombos(combosText)
-            cfg.timeout = Double(min(max(timeout, 1), 15))
-        }
-        // 읽기 → 판정 → 저장을 한 덩어리로 묶어, 겹쳐 들어온 입력도 순서대로 처리한다.
+        // 평소에는 누른 칸 번호를 기록 파일 끝에 덧붙이기만 한다. (판정은 위젯이 다시 그려질 때 한다)
+        if TapLog.append(cell: cell) { return .result() }
+
+        // 공유 폴더를 못 쓰는 설치본: 예전 방식(위젯이 넘겨준 조합으로 직접 판정)
+        var cfg = LauncherConfig()
+        cfg.combos = LauncherConfig.parseCombos(combosText)
+        cfg.timeout = Double(min(max(timeout, 1), 15))
         let tapped = cell
         TapState.exclusive {
-            let state = TapState.current(timeout: cfg.timeout)
+            let state = TapState.legacyCurrent(timeout: cfg.timeout)
             let r = ComboLogic.resolve(seq: state.seq, tap: tapped, combos: cfg.combos)
-            let prev = TapState.load()
+            let prev = TapState.legacyLoad()
             TapState(seq: r.new, at: .now, lastCell: tapped, count: prev.count + 1, readyURL: r.url).save()
         }
         return .result()
