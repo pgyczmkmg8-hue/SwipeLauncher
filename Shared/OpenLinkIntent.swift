@@ -35,22 +35,45 @@ struct TapIntent: AppIntent {
     init(cell: Int) { self.cell = cell }
 
     func perform() async throws -> some IntentResult {
+        Self.record(cell: cell)
+        return .result()
+    }
+
+    /// 누른 칸을 기록한다. (버튼용과 토글용 인텐트가 같이 쓴다)
+    static func record(cell: Int) {
         // 평소에는 누른 칸 번호를 기록 파일 끝에 덧붙이기만 한다. (판정은 위젯이 다시 그려질 때 한다)
         if TapLog.append(cell: cell) {
             // 화면이 다시 그려지기 전에 먼저 손끝에 알려 준다.
             if LauncherConfig.hapticEnabled { AudioServicesPlaySystemSound(1519) }
-            return .result()
+            return
         }
 
         // 공유 폴더를 못 쓰는 설치본: 예전 방식
         let cfg = LauncherConfig.load()
-        let tapped = cell
         TapState.exclusive {
             let state = TapState.legacyCurrent(timeout: cfg.timeout)
-            let r = ComboLogic.resolve(seq: state.seq, tap: tapped, combos: cfg.combos)
+            let r = ComboLogic.resolve(seq: state.seq, tap: cell, combos: cfg.combos)
             let prev = TapState.legacyLoad()
-            TapState(seq: r.new, at: .now, lastCell: tapped, count: prev.count + 1, readyURL: r.url).save()
+            TapState(seq: r.new, at: .now, lastCell: cell, count: prev.count + 1, readyURL: r.url).save()
         }
+    }
+}
+
+/// 위젯의 토글로 쓰는 칸 입력. 토글은 누르는 즉시 시스템이 '켜진 상태'로 먼저 그려 주므로,
+/// 위젯이 다시 그려질 때까지 기다리지 않고 누른 칸이 바로 보인다. 값(켜짐/꺼짐)은 쓰지 않는다.
+struct TapToggleIntent: SetValueIntent {
+    static var title: LocalizedStringResource = "칸 입력"
+    static var openAppWhenRun: Bool = false
+    static var isDiscoverable: Bool = false
+
+    @Parameter(title: "칸 번호") var cell: Int
+    @Parameter(title: "값") var value: Bool
+
+    init() { self.cell = 0; self.value = false }
+    init(cell: Int) { self.cell = cell; self.value = false }
+
+    func perform() async throws -> some IntentResult {
+        TapIntent.record(cell: cell)
         return .result()
     }
 }

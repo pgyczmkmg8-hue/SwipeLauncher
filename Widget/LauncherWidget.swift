@@ -50,6 +50,16 @@ struct Provider: TimelineProvider {
     }
 }
 
+/// 칸 하나의 겉모습. 평소에는 눈에 보이지 않고, 눌린 직후(토글이 켜진 상태)나 방금 눌린 칸일 때 살짝 불투명해진다.
+struct CellToggleStyle: ToggleStyle {
+    let flash: Bool
+    func makeBody(configuration: Configuration) -> some View {
+        (configuration.isOn || flash ? Color.white.opacity(0.28) : Color.black.opacity(0.004))
+            .contentShape(Rectangle())
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
 struct GridView: View {
     let entry: Entry
 
@@ -97,7 +107,9 @@ struct GridView: View {
         } else {
             // 진행 중이거나 조합과 무관한 칸도 반드시 버튼으로 받는다.
             // (일반 영역으로 두면 시스템 기본 동작인 '위젯 앱 열기'가 실행된다)
-            Button(intent: TapIntent(cell: number)) { area }.buttonStyle(.plain)
+            // 토글: 누르는 즉시 시스템이 켜진 상태로 먼저 그린다. (항상 꺼진 상태로 다시 그려진다)
+            Toggle(isOn: false, intent: TapToggleIntent(cell: number)) { EmptyView() }
+                .toggleStyle(CellToggleStyle(flash: entry.flash == number))
         }
     }
 }
