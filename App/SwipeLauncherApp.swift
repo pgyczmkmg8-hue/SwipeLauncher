@@ -115,6 +115,7 @@ struct ContentView: View {
     @State private var latestTag: String?
     @State private var checking = false
     @State private var haptic = LauncherConfig.hapticEnabled
+    @State private var showShortcut = false
 
     var body: some View {
         NavigationStack {
@@ -186,6 +187,14 @@ struct ContentView: View {
                         config.combos.append(Combo(seq: "", url: ""))
                     } label: {
                         Label("조합 추가", systemImage: "plus.circle")
+                    }
+                    Button {
+                        showShortcut = true
+                    } label: {
+                        Label("단축어로 앱 열기 주소 만들기", systemImage: "wand.and.stars")
+                    }
+                    .sheet(isPresented: $showShortcut) {
+                        ShortcutHelperView { url in config.combos.append(Combo(seq: "", url: url)) }
                     }
                     if !testResult.isEmpty { Text(testResult).font(.footnote).foregroundStyle(.secondary) }
                 } header: {
