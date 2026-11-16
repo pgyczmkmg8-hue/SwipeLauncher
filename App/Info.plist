@@ -31,6 +31,8 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>앱 설정을 열 때 본인 확인을 위해 Face ID를 사용합니다.</string>
 	<key>UILaunchScreen</key>
 	<dict/>
 </dict>

@@ -8,7 +8,7 @@ struct SwipeLauncherApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .task {
                     TapLog.trimIfNeeded()
                     WidgetCenter.shared.reloadAllTimelines()
@@ -19,6 +19,7 @@ struct SwipeLauncherApp: App {
                           let u = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                             .queryItems?.first(where: { $0.name == "u" })?.value,
                           let target = URL(string: u) else { return }
+                    AppLock.shared.noteRelay()
                     RelayOpener.shared.open(target)
                     TapState.reset()    // 입력 상태 정리는 열기 요청 뒤에
                 }
@@ -106,6 +107,7 @@ enum UpdateChecker {
 }
 
 struct ContentView: View {
+    @EnvironmentObject private var lock: AppLock
     @State private var config = LauncherConfig.load()
     @State private var sharing = LauncherConfig.isSharingAvailable
     @State private var testResult = ""
@@ -203,6 +205,15 @@ struct ContentView: View {
                     }
                 } footer: {
                     Text("마지막으로 누른 뒤 이 시간이 지나면 입력이 처음부터 다시 시작됩니다. 중간에 조합과 맞지 않는 칸을 눌러도 그 칸부터 다시 시작합니다.")
+                }
+
+                Section {
+                    Toggle("지문·얼굴 잠금", isOn: Binding(get: { lock.lockEnabled }, set: { lock.setLockEnabled($0) }))
+                    Toggle("블러 처리", isOn: $lock.blurEnabled)
+                } header: {
+                    Text("보안")
+                } footer: {
+                    Text("잠금: 앱을 열 때마다 인증합니다. (생체 인증이 안 되면 기기 암호) 블러: 앱 전환 화면 등에서 앱 내용을 흐리게 가립니다. 앱 화면만 보호하며, 위젯 칸 입력과 앱 열기는 잠금과 무관하게 바로 동작합니다.")
                 }
 
                 Section("사용법") {
